@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.CouponMapper">
+
+    <resultMap id="CouponResultMap" type="com.example.demo.domain.Coupon">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type" property="type"/>
+        <result column="value" property="value"/>
+        <result column="min_amount" property="minAmount"/>
+        <result column="total_count" property="totalCount"/>
+        <result column="remaining_count" property="remainingCount"/>
+        <result column="limit_per_user" property="limitPerUser"/>
+        <result column="validity_type" property="validityType"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="valid_days" property="validDays"/>
+        <result column="applicable_products" property="applicableProducts"/>
+        <result column="applicable_categories" property="applicableCategories"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="CouponResultMap">
+        select * from coupon where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="CouponResultMap">
+        select * from coupon order by create_time desc
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into coupon(name, type, value, min_amount, total_count, remaining_count, limit_per_user,
+                          validity_type, start_time, end_time, valid_days,
+                          applicable_products, applicable_categories, status)
+        values (#{name}, #{type}, #{value}, #{minAmount}, #{totalCount}, #{remainingCount}, #{limitPerUser},
+                #{validityType}, #{startTime}, #{endTime}, #{validDays},
+                #{applicableProducts}, #{applicableCategories}, #{status})
+    </insert>
+
+    <update id="update">
+        update coupon
+        set name                = #{name},
+            type                = #{type},
+            value               = #{value},
+            min_amount          = #{minAmount},
+            total_count         = #{totalCount},
+            remaining_count     = #{remainingCount},
+            limit_per_user      = #{limitPerUser},
+            validity_type       = #{validityType},
+            start_time          = #{startTime},
+            end_time            = #{endTime},
+            valid_days          = #{validDays},
+            applicable_products = #{applicableProducts},
+            applicable_categories = #{applicableCategories},
+            status              = #{status}
+        where id = #{id}
+    </update>
+
+    <delete id="delete">
+        delete from coupon where id = #{id}
+    </delete>
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.PromotionMapper">
+
+    <resultMap id="PromotionResultMap" type="com.example.demo.domain.Promotion">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="type" property="type"/>
+        <result column="description" property="description"/>
+        <result column="rule_config" property="ruleConfig"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="status" property="status"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="PromotionResultMap">
+        select * from promotion where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="PromotionResultMap">
+        select * from promotion order by sort_order asc, id asc
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into promotion(name, type, description, rule_config, start_time, end_time, status, sort_order)
+        values (#{name}, #{type}, #{description}, #{ruleConfig}, #{startTime}, #{endTime}, #{status}, #{sortOrder})
+    </insert>
+
+    <update id="update">
+        update promotion
+        set name        = #{name},
+            type        = #{type},
+            description = #{description},
+            rule_config = #{ruleConfig},
+            start_time  = #{startTime},
+            end_time    = #{endTime},
+            status      = #{status},
+            sort_order  = #{sortOrder}
+        where id = #{id}
+    </update>
+
+    <delete id="delete">
+        delete from promotion where id = #{id}
+    </delete>
+</mapper>

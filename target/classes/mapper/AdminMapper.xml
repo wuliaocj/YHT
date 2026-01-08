@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.AdminMapper">
+
+    <resultMap id="AdminResultMap" type="com.example.demo.domain.Admin">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="real_name" property="realName"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="avatar" property="avatar"/>
+        <result column="role" property="role"/>
+        <result column="status" property="status"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="last_login_ip" property="lastLoginIp"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="AdminResultMap">
+        select * from admin where id = #{id}
+    </select>
+
+    <select id="selectByUsername" resultMap="AdminResultMap">
+        select * from admin where username = #{username}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into admin(username, password, real_name, phone, email, avatar, role, status)
+        values (#{username}, #{password}, #{realName}, #{phone}, #{email}, #{avatar}, #{role}, #{status})
+    </insert>
+
+    <update id="update">
+        update admin
+        set real_name       = #{realName},
+            phone           = #{phone},
+            email           = #{email},
+            avatar          = #{avatar},
+            role            = #{role},
+            status          = #{status},
+            last_login_time = #{lastLoginTime},
+            last_login_ip   = #{lastLoginIp},
+            update_time     = now()
+        where id = #{id}
+    </update>
+</mapper>

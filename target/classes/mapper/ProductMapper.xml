@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.ProductMapper">
+
+    <resultMap id="ProductResultMap" type="com.example.demo.domain.Product">
+        <id column="id" property="id"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="name" property="name"/>
+        <result column="en_name" property="enName"/>
+        <result column="description" property="description"/>
+        <result column="detail" property="detail"/>
+        <result column="main_image" property="mainImage"/>
+        <result column="images" property="images"/>
+        <result column="base_price" property="basePrice"/>
+        <result column="origin_price" property="originPrice"/>
+        <result column="inventory" property="inventory"/>
+        <result column="sales_count" property="salesCount"/>
+        <result column="is_hot" property="isHot"/>
+        <result column="is_new" property="isNew"/>
+        <result column="is_recommend" property="isRecommend"/>
+        <result column="custom_options" property="customOptions"/>
+        <result column="status" property="status"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="ProductResultMap">
+        select * from product where id = #{id}
+    </select>
+
+    <select id="selectByCategoryId" resultMap="ProductResultMap">
+        select *
+        from product
+        where category_id = #{categoryId}
+          and status = 1
+        order by sort_order asc, id asc
+    </select>
+
+    <select id="selectHotProducts" resultMap="ProductResultMap">
+        select *
+        from product
+        where status = 1
+          and is_hot = 1
+        order by sales_count desc
+    </select>
+
+    <select id="selectAll" resultMap="ProductResultMap">
+        select * from product order by sort_order asc, id asc
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into product(category_id, name, en_name, description, detail, main_image, images,
+                            base_price, origin_price, inventory, sales_count,
+                            is_hot, is_new, is_recommend, custom_options,
+                            status, sort_order)
+        values (#{categoryId}, #{name}, #{enName}, #{description}, #{detail}, #{mainImage}, #{images},
+                #{basePrice}, #{originPrice}, #{inventory}, #{salesCount},
+                #{isHot}, #{isNew}, #{isRecommend}, #{customOptions},
+                #{status}, #{sortOrder})
+    </insert>
+
+    <update id="update">
+        update product
+        set category_id   = #{categoryId},
+            name          = #{name},
+            en_name       = #{enName},
+            description   = #{description},
+            detail        = #{detail},
+            main_image    = #{mainImage},
+            images        = #{images},
+            base_price    = #{basePrice},
+            origin_price  = #{originPrice},
+            inventory     = #{inventory},
+            sales_count   = #{salesCount},
+            is_hot        = #{isHot},
+            is_new        = #{isNew},
+            is_recommend  = #{isRecommend},
+            custom_options = #{customOptions},
+            status        = #{status},
+            sort_order    = #{sortOrder}
+        where id = #{id}
+    </update>
+
+    <delete id="delete">
+        delete from product where id = #{id}
+    </delete>
+</mapper>
+
+
