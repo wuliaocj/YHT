@@ -61,6 +61,71 @@
 			<version>3.0.5</version>
 			<scope>test</scope>
 		</dependency>
+
+
+
+		<!-- JWT 依赖 -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- Spring Security 核心依赖（包含所有你需要的类） -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+			<!-- Spring Boot 父工程已管理版本，无需手动指定 -->
+			<!-- 若未使用父工程，需指定版本：<version>3.2.0</version>（与你的 Spring Boot 版本一致） -->
+		</dependency>
+
+
+		<!-- HTTP 客户端（调用微信接口） -->
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>4.12.0</version>
+		</dependency>
+
+		<!-- 工具类 -->
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-all</artifactId>
+			<version>5.8.22</version>
+		</dependency>
+
+		<!-- Jakarta Validation API 核心包（注解定义） -->
+		<dependency>
+			<groupId>jakarta.validation</groupId>
+			<artifactId>jakarta.validation-api</artifactId>
+			<version>3.1.0</version> <!-- 推荐稳定版本，也可使用 3.0.2 等 -->
+		</dependency>
+
+		<!-- Hibernate Validator 实现包（提供注解的校验逻辑） -->
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>8.0.1.Final</version> <!-- 与 API 3.x 配套的实现版本 -->
+		</dependency>
+
+		<!-- 可选：如果是 Web 项目（如 Spring Boot），需引入表达式语言依赖 -->
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>jakarta.el</artifactId>
+			<version>4.0.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

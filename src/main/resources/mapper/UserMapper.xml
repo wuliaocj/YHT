@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.UserMapper">
+
+    <resultMap id="UserResultMap" type="com.example.demo.domain.User">
+        <id column="id" property="id"/>
+        <result column="openid" property="openid"/>
+        <result column="unionid" property="unionid"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="phone" property="phone"/>
+        <result column="gender" property="gender"/>
+        <result column="province" property="province"/>
+        <result column="city" property="city"/>
+        <result column="integral" property="integral"/>
+        <result column="vip_level" property="vipLevel"/>
+        <result column="total_consumption" property="totalConsumption"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="UserResultMap">
+        select * from `user` where id = #{id}
+    </select>
+
+    <select id="selectByOpenid" resultMap="UserResultMap">
+        select * from `user` where openid = #{openid}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into `user`(openid, unionid, nickname, avatar_url, phone, gender, province, city,
+                           integral, vip_level, total_consumption, last_login_time, status)
+        values (#{openid}, #{unionid}, #{nickname}, #{avatarUrl}, #{phone}, #{gender}, #{province}, #{city},
+                #{integral}, #{vipLevel}, #{totalConsumption}, #{lastLoginTime}, #{status})
+    </insert>
+
+    <update id="update">
+        update `user`
+        set nickname        = #{nickname},
+            avatar_url      = #{avatarUrl},
+            phone           = #{phone},
+            gender          = #{gender},
+            province        = #{province},
+            city            = #{city},
+            integral        = #{integral},
+            vip_level       = #{vipLevel},
+            total_consumption = #{totalConsumption},
+            last_login_time = #{lastLoginTime},
+            status          = #{status}
+        where id = #{id}
+    </update>
+
+    <select id="selectByIds" resultMap="UserResultMap">
+        select * from `user` where id in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectAll" resultMap="UserResultMap">
+        select * from `user` order by create_time desc
+    </select>
+</mapper>
+
+

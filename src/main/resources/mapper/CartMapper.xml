@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.CartMapper">
+
+    <resultMap id="CartResultMap" type="com.example.demo.domain.Cart">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="product_id" property="productId"/>
+        <result column="quantity" property="quantity"/>
+        <result column="selected_specs" property="selectedSpecs"/>
+        <result column="total_price" property="totalPrice"/>
+        <result column="is_selected" property="isSelected"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="CartResultMap">
+        select * from cart where id = #{id}
+    </select>
+
+    <select id="selectByUserId" resultMap="CartResultMap">
+        select * from cart where user_id = #{userId} order by create_time desc
+    </select>
+
+    <select id="selectByUserAndProduct" resultMap="CartResultMap">
+        select *
+        from cart
+        where user_id = #{userId}
+          and product_id = #{productId}
+        limit 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into cart(user_id, product_id, quantity, selected_specs, total_price, is_selected)
+        values (#{userId}, #{productId}, #{quantity}, #{selectedSpecs}, #{totalPrice}, #{isSelected})
+    </insert>
+
+    <update id="update">
+        update cart
+        set quantity      = #{quantity},
+            selected_specs = #{selectedSpecs},
+            total_price   = #{totalPrice},
+            is_selected   = #{isSelected}
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from cart where id = #{id}
+    </delete>
+
+    <delete id="deleteByUserId">
+        delete from cart where user_id = #{userId}
+    </delete>
+</mapper>
+
+
