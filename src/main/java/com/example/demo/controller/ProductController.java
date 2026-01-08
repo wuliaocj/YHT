@@ -48,6 +48,11 @@ public class ProductController {
         return HttpResult.ok(productService.listHotProducts());
     }
 
+    @GetMapping("/new")
+    public HttpResult newProducts() {
+        return HttpResult.ok(productService.listNewProducts());
+    }
+
     // 管理后台接口
     @GetMapping("/admin/product/list")
     public HttpResult adminListProducts() {

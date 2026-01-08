@@ -41,6 +41,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<Product> listNewProducts() {
+        return productMapper.selectNewProducts();
+    }
+
+    @Override
     public List<Product> listAllProducts() {
         return productMapper.selectAll();
     }
@@ -55,10 +60,13 @@ public class ProductServiceImpl implements ProductService {
         return product;
     }
 
+
     @Override
     public void deleteProduct(Integer id) {
         productMapper.delete(id);
     }
+
+
 }
 
 

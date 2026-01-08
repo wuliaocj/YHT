@@ -22,6 +22,8 @@ public interface ProductMapper {
     int update(Product product);
 
     int delete(@Param("id") Integer id);
+
+    List<Product> selectNewProducts();
 }
 
 

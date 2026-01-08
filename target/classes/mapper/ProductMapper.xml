@@ -49,6 +49,13 @@
     <select id="selectAll" resultMap="ProductResultMap">
         select * from product order by sort_order asc, id asc
     </select>
+    <select id="selectNewProducts" resultType="com.example.demo.domain.Product">
+        select *
+        from product
+        where status = 1
+          and is_new = 1
+        order by sales_count desc
+    </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into product(category_id, name, en_name, description, detail, main_image, images,

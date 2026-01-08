@@ -3,6 +3,8 @@ package com.example.demo.controller;
 import com.example.demo.domain.Admin;
 import com.example.demo.http.HttpResult;
 import com.example.demo.service.AdminService;
+import com.example.demo.service.OrderService;
+import com.example.demo.service.ProductService;
 import com.example.demo.service.UserService;
 import com.example.demo.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,12 @@ public class AdminController {
     private final JwtUtil jwtUtil;
     @Autowired
     private UserService userService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private ProductService productService;
+
+
 
 
     public AdminController(AdminService adminService, JwtUtil jwtUtil) {
@@ -63,4 +71,21 @@ public class AdminController {
         return HttpResult.ok(userService.listAllUsers());
     }
 
+    //订单后台接口
+    @GetMapping("/order/list")
+    public HttpResult adminListOrder() {
+        return HttpResult.ok(orderService.listAllOrders());
+    }
+
+    //分类
+//    @GetMapping("/category/list")
+//    public HttpResult adminListCategory() {
+//        return HttpResult.ok(categoryService.listAllCategory());
+//    }
+
+    //商品
+    @GetMapping("/product/list")
+    public HttpResult adminListProducts() {
+        return HttpResult.ok(productService.listAllProducts());
+    }
 }
