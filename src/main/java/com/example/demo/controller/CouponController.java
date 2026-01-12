@@ -10,7 +10,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/coupon")
 public class CouponController {
-
     private final CouponService couponService;
 
     public CouponController(CouponService couponService) {

@@ -26,14 +26,16 @@ public class AdminController {
     @Autowired
     private ProductService productService;
 
-
-
-
     public AdminController(AdminService adminService, JwtUtil jwtUtil) {
         this.adminService = adminService;
         this.jwtUtil = jwtUtil;
     }
 
+    /**
+     * 管理员登录
+     * @param request
+     * @return
+     */
     @PostMapping("/login")
     public HttpResult login(@RequestBody Map<String, String> request) {
         String username = request.get("username");
@@ -66,26 +68,24 @@ public class AdminController {
 
 
     // 管理后台接口
+    /**
+     * 管理员获取用户列表
+     * @return
+     */
     @GetMapping("/user/list")
     public HttpResult adminListUsers() {
         return HttpResult.ok(userService.listAllUsers());
     }
 
-    //订单后台接口
+    /**
+     * 订单后台接口
+     * @return
+     */
     @GetMapping("/order/list")
     public HttpResult adminListOrder() {
         return HttpResult.ok(orderService.listAllOrders());
     }
 
-    //分类
-//    @GetMapping("/category/list")
-//    public HttpResult adminListCategory() {
-//        return HttpResult.ok(categoryService.listAllCategory());
-//    }
 
-    //商品
-    @GetMapping("/product/list")
-    public HttpResult adminListProducts() {
-        return HttpResult.ok(productService.listAllProducts());
-    }
+
 }

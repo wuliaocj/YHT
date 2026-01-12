@@ -101,6 +101,10 @@ public class UserController {
             return Result.success(responseVO);
         }
 
+    /**
+     * 检查token有效性
+     * @return
+     */
     // 新增：校验 token 有效性接口
     @GetMapping("/checkToken")
     public Map<String, Object> checkToken() {
@@ -123,6 +127,12 @@ public class UserController {
         return result;
     }
 
+    /**
+     *
+     * @param userId
+     * @param request
+     * @return
+     */
     @PostMapping("/admin/user/updateStatus/{userId}")
     public HttpResult adminUpdateUserStatus(@PathVariable Integer userId, @RequestBody Map<String, Integer> request) {
         Integer status = request.get("status");

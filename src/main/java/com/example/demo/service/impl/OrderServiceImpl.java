@@ -6,7 +6,9 @@ import com.example.demo.domain.OrderItem;
 import com.example.demo.mapper.CartMapper;
 import com.example.demo.mapper.OrderItemMapper;
 import com.example.demo.mapper.OrderMapper;
+import com.example.demo.service.CartService;
 import com.example.demo.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemMapper orderItemMapper;
     private final CartMapper cartMapper;
 
+
     public OrderServiceImpl(OrderMapper orderMapper,
                             OrderItemMapper orderItemMapper,
                             CartMapper cartMapper) {
@@ -33,54 +36,52 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Order createOrder(Integer userId) {
-        List<Cart> cartList = cartMapper.selectByUserId(userId);
-        List<Cart> selected = new ArrayList<>();
-        for (Cart c : cartList) {
-            if (c.getIsSelected() != null && c.getIsSelected() == 1) {
-                selected.add(c);
-            }
-        }
-        if (selected.isEmpty()) {
-            return null;
-        }
+    public Order createOrder(Integer userId, Order orderParam) {
+//        // 1. 查询用户购物车商品，若无则返回null
+//        List<Cart> cartItems = cartService.listUserCart(userId);
+//        if (cartItems.isEmpty()) {
+//            return null;
+//        }
+//
+//        // 2. 计算商品总价
+//        BigDecimal totalAmount = cartItems.stream()
+//                .map(item -> item.getPrice().multiply(new BigDecimal(item.getQuantity())))
+//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+//
+//        // 3. 计算优惠金额（优惠券/满减等）
+//        BigDecimal discountAmount = couponService.calculateDiscount(userId, totalAmount);
+//
+//        // 4. 组装订单对象
+//        Order order = new Order();
+//        order.setUserId(userId);
+//        order.setOrderNo(generateOrderNo()); // 生成唯一订单编号
+//        order.setTotalAmount(totalAmount);
+//        order.setDiscountAmount(discountAmount);
+//        order.setDeliveryFee(orderParam.getDeliveryFee());
+//        // 实际支付金额 = 总价 - 优惠 + 配送费
+//        order.setActualAmount(totalAmount.subtract(discountAmount).add(orderParam.getDeliveryFee()));
+//        order.setPaymentMethod(orderParam.getPaymentMethod());
+//        order.setPaymentStatus(0); // 初始未支付
+//        order.setOrderStatus(0); // 初始待支付
+//        order.setOrderType(orderParam.getOrderType());
+//        order.setTakeCode(generateTakeCode()); // 生成取餐码
+//        order.setEstimatedTime(LocalDateTime.now().plusMinutes(10)); // 预计10分钟完成
+//        order.setUserRemark(orderParam.getUserRemark());
+//        order.setCreateTime(LocalDateTime.now());
+//        order.setUpdateTime(LocalDateTime.now());
+//
+//        // 5. 保存订单到数据库
+//        orderMapper.insert(order);
 
-        BigDecimal totalAmount = selected.stream()
-                .map(Cart::getTotalPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
+        /**
+         * 暂时使用
+         */
         Order order = new Order();
-        order.setOrderNo(UUID.randomUUID().toString().replace("-", "").substring(0, 20));
-        order.setUserId(userId);
-        order.setTotalAmount(totalAmount);
-        order.setDiscountAmount(BigDecimal.ZERO);
-        order.setDeliveryFee(BigDecimal.ZERO);
-        order.setActualAmount(totalAmount);
-        order.setPaymentMethod(1);
-        order.setPaymentStatus(0);
-        order.setOrderStatus(0);
-        order.setOrderType(0);
-        order.setCreateTime(LocalDateTime.now());
-        orderMapper.insert(order);
-
-        List<OrderItem> items = new ArrayList<>();
-        for (Cart c : selected) {
-            OrderItem item = new OrderItem();
-            item.setOrderId(order.getId());
-            item.setOrderNo(order.getOrderNo());
-            item.setProductId(c.getProductId());
-            item.setSpecInfo(c.getSelectedSpecs());
-            item.setUnitPrice(c.getTotalPrice().divide(BigDecimal.valueOf(c.getQuantity())));
-            item.setQuantity(c.getQuantity());
-            item.setTotalPrice(c.getTotalPrice());
-            items.add(item);
-        }
-        orderItemMapper.insertBatch(items);
-
-        cartMapper.deleteByUserId(userId);
-
-        return orderMapper.selectById(order.getId());
+        // 6. 清空用户购物车
+//        cartService.clearUserCart(userId);
+        return order;
     }
+
 
     @Override
     public List<Order> listUserOrders(Integer userId) {

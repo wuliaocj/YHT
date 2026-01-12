@@ -22,6 +22,11 @@ public class CartServiceImpl implements CartService {
         this.productMapper = productMapper;
     }
 
+    /**
+     * 通过用户id获取购物车列表
+     * @param userId
+     * @return
+     */
     @Override
     public List<Cart> listUserCart(Integer userId) {
         return cartMapper.selectByUserId(userId);
