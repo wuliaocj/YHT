@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
  */
 @Data
 public class Order {
-
     private Integer id;
     private String orderNo;
     private Integer userId;

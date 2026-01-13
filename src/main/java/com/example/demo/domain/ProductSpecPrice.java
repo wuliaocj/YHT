@@ -1,10 +1,10 @@
 package com.example.demo.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -53,14 +53,14 @@ public class ProductSpecPrice {
      */
     // 核心修复：改为 LocalDate + 指定JSON格式
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date createTime;
+    private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
     // 核心修复：改为 LocalDate + 指定JSON格式
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date updateTime;
+    private LocalDateTime updateTime;
 
     @Override
     public boolean equals(Object that) {

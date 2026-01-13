@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
  */
 @Data
 public class OperationLog {
-
     private Integer id;
     private Integer adminId;
     private String module;

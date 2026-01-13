@@ -1,6 +1,8 @@
 package com.example.demo.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +14,9 @@ import java.time.LocalDateTime;
 @Data
 @TableName("product") // 对应数据库product表
 public class Product {
-    private Long id; // 主键ID
+
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long id; // 雪花算法生成的ID是Long类型
 
     @NotNull(message = "分类ID不能为空")
     @TableField("category_id") // 显式指定数据库字段名（可选，驼峰自动转换）
