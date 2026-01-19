@@ -1,11 +1,12 @@
 package com.example.demo.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.demo.domain.Admin;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 @Mapper
-public interface AdminMapper {
+public interface AdminMapper extends BaseMapper<Admin> {
 
     Admin selectById(@Param("id") Integer id);
 

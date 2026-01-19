@@ -15,9 +15,6 @@ import java.util.List;
 @Data
 public class AddProductVO {
 
-
-
-
     /**
      * 商品名称（必填）
      */

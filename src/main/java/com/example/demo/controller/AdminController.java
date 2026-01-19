@@ -7,34 +7,29 @@ import com.example.demo.service.OrderService;
 import com.example.demo.service.ProductService;
 import com.example.demo.service.UserService;
 import com.example.demo.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/admin")
+@RequiredArgsConstructor
 public class AdminController {
 
     private final AdminService adminService;
     private final JwtUtil jwtUtil;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private OrderService orderService;
-    @Autowired
-    private ProductService productService;
-
-    public AdminController(AdminService adminService, JwtUtil jwtUtil) {
-        this.adminService = adminService;
-        this.jwtUtil = jwtUtil;
-    }
+    private final UserService userService;
+    private final OrderService orderService;
+    private final ProductService productService;
 
     /**
      * 管理员登录
-     * @param request
-     * @return
+     * @param request 登录请求（包含username和password）
+     * @return 登录结果（token和admin信息）
      */
     @PostMapping("/login")
     public HttpResult login(@RequestBody Map<String, String> request) {
@@ -42,6 +37,7 @@ public class AdminController {
         String password = request.get("password");
 
         if (username == null || password == null) {
+            log.warn("管理员登录失败：用户名或密码为空");
             return HttpResult.error("用户名和密码不能为空");
         }
 
@@ -53,12 +49,18 @@ public class AdminController {
             Map<String, Object> result = new HashMap<>();
             result.put("token", token);
             result.put("admin", admin);
+            log.info("管理员登录成功，adminId：{}，username：{}", admin.getId(), username);
             return HttpResult.ok(result);
         } catch (RuntimeException e) {
+            log.warn("管理员登录失败：{}", e.getMessage());
             return HttpResult.error(e.getMessage());
         }
     }
 
+    /**
+     * 获取当前管理员信息
+     * @return 当前管理员信息
+     */
     @GetMapping("/current")
     public HttpResult getCurrent() {
         // 这里应该从token中获取adminId，暂时返回示例
@@ -66,24 +68,26 @@ public class AdminController {
         return HttpResult.ok();
     }
 
-
-    // 管理后台接口
     /**
      * 管理员获取用户列表
-     * @return
+     * @return 用户列表
      */
     @GetMapping("/user/list")
     public HttpResult adminListUsers() {
-        return HttpResult.ok(userService.listAllUsers());
+        var users = userService.listAllUsers();
+        log.debug("管理员查询用户列表，用户数量：{}", users.size());
+        return HttpResult.ok(users);
     }
 
     /**
-     * 订单后台接口
-     * @return
+     * 管理员获取订单列表
+     * @return 订单列表
      */
     @GetMapping("/order/list")
     public HttpResult adminListOrder() {
-        return HttpResult.ok(orderService.listAllOrders());
+        var orders = orderService.listAllOrders();
+        log.debug("管理员查询订单列表，订单数量：{}", orders.size());
+        return HttpResult.ok(orders);
     }
 
 

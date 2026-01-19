@@ -1,5 +1,6 @@
 package com.example.demo.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.demo.domain.Cart;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -7,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface CartMapper {
+public interface CartMapper extends BaseMapper<Cart> {
 
     Cart selectById(@Param("id") Integer id);
 
@@ -22,6 +23,8 @@ public interface CartMapper {
     int deleteById(@Param("id") Integer id);
 
     int deleteByUserId(@Param("userId") Integer userId);
+
+    void insertCartWithSpecIds(Cart cart);
 }
 
 

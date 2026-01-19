@@ -30,6 +30,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 登录接口放行
                         .requestMatchers("/api/user/login", "/api/admin/login").permitAll()
+                        // 支付回调接口放行（支付平台回调，无需认证）
+                        .requestMatchers("/api/payment/callback").permitAll()
                         // 其他接口需要认证
                         .anyRequest().authenticated()
                 )

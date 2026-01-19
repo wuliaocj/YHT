@@ -22,6 +22,7 @@ public class Result<T> {
      */
     private T data;
 
+
     // 成功响应
     public static <T> Result<T> success(T data) {
         Result<T> result = new Result<>();
@@ -40,6 +41,7 @@ public class Result<T> {
         return result;
     }
 
+
     // 自定义响应
     public static <T> Result<T> build(Integer code, String msg, T data) {
         Result<T> result = new Result<>();
@@ -48,4 +50,5 @@ public class Result<T> {
         result.setData(data);
         return result;
     }
+
 }

@@ -11,40 +11,40 @@ import com.example.demo.service.ProductSpecPriceService;
 import com.example.demo.vo.AddProductVO;
 import com.example.demo.vo.GetProductVO;
 import com.example.demo.vo.ProductSpecVO;
+import com.example.demo.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
 
 /**
  * 商品服务实现类
- * 修复点：
- * 1. 注入 CategoryMapper 处理分类查询
- * 2. 每个查询方法内创建独立的 LambdaQueryWrapper（避免多线程冲突）
- * 3. 修复字段名（basePriceAmount → basePrice）
- * 4. 补充所有查询方法的正确逻辑
  */
+@Slf4j
 @Service
-@RequiredArgsConstructor // 构造器注入依赖（替代 @Autowired）
+@RequiredArgsConstructor
 public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> implements ProductService {
 
     private final ProductMapper productMapper;
     private final ProductSpecPriceMapper productSpecPriceMapper;
-
-
-    @Autowired
-    ProductSpecPriceService productSpecPriceService;
+    private final ProductSpecPriceService productSpecPriceService;
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String addProduct(AddProductVO addProductVO) {
         try {
-            //保存商品
+            // 保存商品
             Product product = new Product();
             product.setCategoryId(addProductVO.getCategoryId());
             product.setName(addProductVO.getName());
@@ -60,9 +60,10 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             product.setSortOrder(addProductVO.getSort_order());
             product.setCreateTime(LocalDateTime.now());
             product.setUpdateTime(LocalDateTime.now());
-            System.out.println(productMapper.insert(product));
+            int insertResult = productMapper.insert(product);
+            log.info("商品保存成功，商品ID：{}，插入结果：{}", product.getId(), insertResult);
 
-            //保存杯型
+            // 保存杯型
             List<ProductSpecPrice> cupTypeList = addProductVO.getCupTypeList();
             if (!CollectionUtils.isEmpty(cupTypeList)) {
                 for (ProductSpecPrice productSpecPrice : cupTypeList) {
@@ -72,8 +73,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
+                log.info("保存杯型规格数量：{}", cupTypeList.size());
             }
-            //保存小料
+            // 保存小料
             List<ProductSpecPrice> toppingList = addProductVO.getToppingList();
             if (!CollectionUtils.isEmpty(toppingList)) {
                 for (ProductSpecPrice productSpecPrice : toppingList) {
@@ -83,11 +85,12 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
+                log.info("保存小料规格数量：{}", toppingList.size());
             }
             return "保存成功";
-        }
-        catch (Exception e) {
-            return "保存失败"+e.getMessage();
+        } catch (Exception e) {
+            log.error("保存商品失败：", e);
+            throw new BusinessException("保存商品失败：" + e.getMessage());
         }
     }
 
@@ -99,7 +102,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         // 1. 查询商品基础信息
         Product product = this.getById(id);
         if (product == null) {
-            throw new RuntimeException("商品不存在");
+            throw new BusinessException(404, "商品不存在");
         }
 
         // 2. 查询杯型规格（type=cup_type，status=1）
@@ -108,17 +111,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 .eq(ProductSpecPrice::getSpecType, "cup_type")
                 .eq(ProductSpecPrice::getStatus, 1);
         List<ProductSpecPrice> cupTypeSpecList = productSpecPriceService.list(cupTypeWrapper);
-        // 转换为规格子VO
         List<ProductSpecVO> cupTypeList = cupTypeSpecList.stream()
-                .map(spec -> {
-                    ProductSpecVO vo = new ProductSpecVO();
-                    vo.setSpecId(spec.getId());
-                    vo.setProductId(spec.getProductId());
-                    vo.setSpecName(spec.getSpecName());
-                    vo.setPriceAdd(spec.getPriceAdd().doubleValue()); // BigDecimal转Double
-                    vo.setStatus(spec.getStatus());
-                    return vo;
-                })
+                .map(this::convertToSpecVO)
                 .collect(Collectors.toList());
 
         // 3. 查询小料规格（type=topping，status=1）
@@ -127,50 +121,99 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 .eq(ProductSpecPrice::getSpecType, "topping")
                 .eq(ProductSpecPrice::getStatus, 1);
         List<ProductSpecPrice> toppingSpecList = productSpecPriceService.list(toppingWrapper);
-        // 转换为规格子VO
         List<ProductSpecVO> toppingList = toppingSpecList.stream()
-                .map(spec -> {
-                    ProductSpecVO vo = new ProductSpecVO();
-                    vo.setSpecId(spec.getId());
-                    vo.setProductId(spec.getProductId());
-                    vo.setSpecName(spec.getSpecName());
-                    vo.setPriceAdd(spec.getPriceAdd().doubleValue());
-                    vo.setStatus(spec.getStatus());
-                    return vo;
-                })
+                .map(this::convertToSpecVO)
                 .collect(Collectors.toList());
 
-        // 4. 组装GetProductVO
-        GetProductVO getProductVO = new GetProductVO();
-        getProductVO.setProductId(product.getId());
-        getProductVO.setName(product.getName());
-        getProductVO.setCupTypeList(cupTypeList);
-        getProductVO.setToppingList(toppingList);
-        getProductVO.setDescription(product.getDescription());
-        getProductVO.setDetail(product.getDetail());
-        getProductVO.setMainImage(product.getMainImage());
-        getProductVO.setBasePrice(product.getBasePrice());
-        getProductVO.setOriginalPrice(product.getOriginPrice());
-        getProductVO.setSalesVolume(0); // 销量字段需根据订单表统计，此处先默认0
-        getProductVO.setIsHot(product.getIsHot());
-        getProductVO.setIsNew(product.getIsNew());
-        getProductVO.setIsRecommend(product.getIsRecommend());
-        getProductVO.setStatus(product.getStatus());
-        getProductVO.setSortOrder(product.getSortOrder());
-        getProductVO.setCreateTime(product.getCreateTime());
-
-        return getProductVO;
+        // 4. 组装GetProductVO（复用buildProductVO方法）
+        Map<String, List<ProductSpecPrice>> specsMap = Map.of(
+                "cup_type", cupTypeSpecList,
+                "topping", toppingSpecList
+        );
+        return buildProductVO(product, specsMap);
     }
 
+    /**
+     * 获取商品列表（优化：批量查询规格，避免N+1问题）
+     */
     @Override
     public List<GetProductVO> getProductList() {
-        List<Product>products=productMapper.selectAll();
-        List<GetProductVO> ProductVOList=new ArrayList<>();
-        if (!CollectionUtils.isEmpty(products)) {
-            for (Product product : products) {
-                ProductVOList.add(getProductById(product.getId()));
-            }
+        List<Product> products = productMapper.selectAll();
+        if (CollectionUtils.isEmpty(products)) {
+            return new ArrayList<>();
         }
-        return ProductVOList;
+
+        // 批量获取所有商品ID
+        List<Long> productIds = products.stream()
+                .map(Product::getId)
+                .collect(Collectors.toList());
+
+        // 批量查询所有规格（一次性查询，避免N+1）
+        LambdaQueryWrapper<ProductSpecPrice> specWrapper = new LambdaQueryWrapper<>();
+        specWrapper.in(ProductSpecPrice::getProductId, productIds)
+                .eq(ProductSpecPrice::getStatus, 1);
+        List<ProductSpecPrice> allSpecs = productSpecPriceService.list(specWrapper);
+
+        // 按商品ID和规格类型分组
+        Map<Long, Map<String, List<ProductSpecPrice>>> specsByProduct = allSpecs.stream()
+                .collect(groupingBy(
+                        ProductSpecPrice::getProductId,
+                        groupingBy(ProductSpecPrice::getSpecType)
+                ));
+
+        // 转换为VO列表
+        return products.stream()
+                .map(product -> buildProductVO(product, specsByProduct.getOrDefault(product.getId(), Map.of())))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 构建商品VO（复用逻辑）
+     */
+    private GetProductVO buildProductVO(Product product, Map<String, List<ProductSpecPrice>> specsMap) {
+        GetProductVO vo = new GetProductVO();
+        vo.setProductId(product.getId());
+        vo.setName(product.getName());
+        vo.setDescription(product.getDescription());
+        vo.setDetail(product.getDetail());
+        vo.setMainImage(product.getMainImage());
+        vo.setBasePrice(product.getBasePrice());
+        vo.setOriginalPrice(product.getOriginPrice());
+        vo.setSalesVolume(0); // 销量字段需根据订单表统计，此处先默认0
+        vo.setIsHot(product.getIsHot());
+        vo.setIsNew(product.getIsNew());
+        vo.setIsRecommend(product.getIsRecommend());
+        vo.setStatus(product.getStatus());
+        vo.setSortOrder(product.getSortOrder());
+        vo.setCreateTime(product.getCreateTime());
+
+        // 转换杯型规格
+        List<ProductSpecPrice> cupTypeSpecs = specsMap.getOrDefault("cup_type", List.of());
+        List<ProductSpecVO> cupTypeList = cupTypeSpecs.stream()
+                .map(this::convertToSpecVO)
+                .collect(Collectors.toList());
+        vo.setCupTypeList(cupTypeList);
+
+        // 转换小料规格
+        List<ProductSpecPrice> toppingSpecs = specsMap.getOrDefault("topping", List.of());
+        List<ProductSpecVO> toppingList = toppingSpecs.stream()
+                .map(this::convertToSpecVO)
+                .collect(Collectors.toList());
+        vo.setToppingList(toppingList);
+
+        return vo;
+    }
+
+    /**
+     * 转换规格为VO
+     */
+    private ProductSpecVO convertToSpecVO(ProductSpecPrice spec) {
+        ProductSpecVO vo = new ProductSpecVO();
+        vo.setSpecId(spec.getId());
+        vo.setProductId(spec.getProductId());
+        vo.setSpecName(spec.getSpecName());
+        vo.setPriceAdd(spec.getPriceAdd().doubleValue());
+        vo.setStatus(spec.getStatus());
+        return vo;
     }
 }

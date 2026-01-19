@@ -1,87 +1,123 @@
 package com.example.demo.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.demo.config.OrderStatusEnum;
+import com.example.demo.config.PaymentStatusEnum;
 import com.example.demo.domain.Cart;
 import com.example.demo.domain.Order;
 import com.example.demo.domain.OrderItem;
 import com.example.demo.mapper.CartMapper;
 import com.example.demo.mapper.OrderItemMapper;
 import com.example.demo.mapper.OrderMapper;
-import com.example.demo.service.CartService;
+import com.example.demo.service.OrderItemService;
 import com.example.demo.service.OrderService;
+import com.example.demo.vo.CreateOrderDTO;
+
+import com.example.demo.vo.OrderItemDTO;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Random;
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    private final OrderMapper orderMapper;
-    private final OrderItemMapper orderItemMapper;
-    private final CartMapper cartMapper;
+    // 注入依赖（确保CartMapper、OrderItemMapper已正确配置）
+    @Autowired
+    private  CartMapper cartMapper;
+    @Autowired
+    private  OrderMapper orderMapper;
+    @Autowired
+    private  OrderItemMapper orderItemMapper;
 
 
-    public OrderServiceImpl(OrderMapper orderMapper,
-                            OrderItemMapper orderItemMapper,
-                            CartMapper cartMapper) {
-        this.orderMapper = orderMapper;
-        this.orderItemMapper = orderItemMapper;
-        this.cartMapper = cartMapper;
-    }
-
+    /**
+     * 核心：创建订单（加事务保证原子性）
+     */
     @Override
-    @Transactional
-    public Order createOrder(Integer userId, Order orderParam) {
-//        // 1. 查询用户购物车商品，若无则返回null
-//        List<Cart> cartItems = cartService.listUserCart(userId);
-//        if (cartItems.isEmpty()) {
-//            return null;
-//        }
-//
-//        // 2. 计算商品总价
-//        BigDecimal totalAmount = cartItems.stream()
-//                .map(item -> item.getPrice().multiply(new BigDecimal(item.getQuantity())))
-//                .reduce(BigDecimal.ZERO, BigDecimal::add);
-//
-//        // 3. 计算优惠金额（优惠券/满减等）
-//        BigDecimal discountAmount = couponService.calculateDiscount(userId, totalAmount);
-//
-//        // 4. 组装订单对象
-//        Order order = new Order();
-//        order.setUserId(userId);
-//        order.setOrderNo(generateOrderNo()); // 生成唯一订单编号
-//        order.setTotalAmount(totalAmount);
-//        order.setDiscountAmount(discountAmount);
-//        order.setDeliveryFee(orderParam.getDeliveryFee());
-//        // 实际支付金额 = 总价 - 优惠 + 配送费
-//        order.setActualAmount(totalAmount.subtract(discountAmount).add(orderParam.getDeliveryFee()));
-//        order.setPaymentMethod(orderParam.getPaymentMethod());
-//        order.setPaymentStatus(0); // 初始未支付
-//        order.setOrderStatus(0); // 初始待支付
-//        order.setOrderType(orderParam.getOrderType());
-//        order.setTakeCode(generateTakeCode()); // 生成取餐码
-//        order.setEstimatedTime(LocalDateTime.now().plusMinutes(10)); // 预计10分钟完成
-//        order.setUserRemark(orderParam.getUserRemark());
-//        order.setCreateTime(LocalDateTime.now());
-//        order.setUpdateTime(LocalDateTime.now());
-//
-//        // 5. 保存订单到数据库
-//        orderMapper.insert(order);
+    @Transactional(rollbackFor = Exception.class) // 任何异常都回滚
+    public Order createOrder(Integer userId, Order order) {
+        // 步骤1：查询用户已选中的购物车商品（is_selected=1）
+        LambdaQueryWrapper<Cart> cartWrapper = new LambdaQueryWrapper<>();
+        cartWrapper.eq(Cart::getUserId, userId)
+                .eq(Cart::getIsSelected, 1); // 只结算选中的商品
+        List<Cart> cartList = cartMapper.selectList(cartWrapper);
 
-        /**
-         * 暂时使用
-         */
-        Order order = new Order();
-        // 6. 清空用户购物车
-//        cartService.clearUserCart(userId);
-        return order;
+        // 校验：无选中商品则返回null
+        if (cartList == null || cartList.isEmpty()) {
+            return null;
+        }
+
+        // 步骤2：生成唯一订单号（规则：时间戳+随机数，确保不重复）
+        String orderNo = generateOrderNo();
+
+        // 步骤3：计算订单金额
+        // 3.1 计算商品总价（购物车商品单价*数量求和）
+        BigDecimal productTotal = cartList.stream()
+                .map(cart -> cart.getUnitPrice().multiply(new BigDecimal(cart.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // 3.2 补全订单金额相关字段
+        BigDecimal discountAmount = order.getDiscountAmount() == null ? BigDecimal.ZERO : order.getDiscountAmount();
+        BigDecimal deliveryFee = order.getDeliveryFee() == null ? BigDecimal.ZERO : order.getDeliveryFee();
+        // 实际支付金额 = 商品总价 + 配送费 - 优惠金额（最小为0）
+        BigDecimal actualAmount = productTotal.add(deliveryFee).subtract(discountAmount);
+        if (actualAmount.compareTo(BigDecimal.ZERO) < 0) {
+            actualAmount = BigDecimal.ZERO;
+        }
+
+        // 步骤4：组装订单主表数据
+        Order newOrder = new Order();
+        newOrder.setOrderNo(orderNo);
+        newOrder.setUserId(userId);
+        newOrder.setTotalAmount(productTotal); // 商品总价
+        newOrder.setDiscountAmount(discountAmount); // 优惠金额
+        newOrder.setDeliveryFee(deliveryFee); // 配送费
+        newOrder.setActualAmount(actualAmount); // 实际支付金额
+        newOrder.setPaymentMethod(order.getPaymentMethod()); // 支付方式
+        newOrder.setPaymentStatus(PaymentStatusEnum.UNPAID.getCode()); // 默认未支付
+        newOrder.setOrderStatus(OrderStatusEnum.PENDING_PAYMENT.getCode()); // 默认待付款
+        newOrder.setOrderType(order.getOrderType()); // 订单类型（堂食/外卖）
+        newOrder.setUserRemark(order.getUserRemark()); // 用户备注
+        newOrder.setCreateTime(LocalDateTime.now());
+        newOrder.setUpdateTime(LocalDateTime.now());
+
+        // 步骤5：插入订单主表
+        orderMapper.insert(newOrder);
+        Integer orderId = newOrder.getId(); // 获取自增的订单ID
+
+        // 步骤6：遍历购物车，插入订单详情表
+        for (Cart cart : cartList) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrderId(orderId);
+            orderItem.setOrderNo(orderNo);
+            orderItem.setProductId(cart.getProductId());
+            orderItem.setProductName(cart.getProductName());
+            orderItem.setProductImage(cart.getProductImage());
+            orderItem.setSpecInfo(cart.getSelectedSpecs()); // 规格信息（如"中杯/三分糖"）
+            orderItem.setUnitPrice(cart.getUnitPrice());
+            orderItem.setQuantity(cart.getQuantity());
+            orderItem.setTotalPrice(cart.getUnitPrice().multiply(new BigDecimal(cart.getQuantity())));
+            orderItem.setCreateTime(LocalDateTime.now());
+            // 插入订单详情
+            orderItemMapper.insert(orderItem);
+        }
+
+        // 步骤7：清空用户已选中的购物车商品（结算后移除）
+        cartMapper.delete(cartWrapper);
+
+        // 步骤8：返回创建成功的订单
+        return newOrder;
     }
-
 
     @Override
     public List<Order> listUserOrders(Integer userId) {
@@ -113,6 +149,15 @@ public class OrderServiceImpl implements OrderService {
         }
         orderMapper.update(order);
     }
+
+    // 生成订单号
+    private String generateOrderNo() {
+        return "ORD" + System.currentTimeMillis() + new Random().nextInt(1000);
+    }
+
+    // 生成取餐码
+    private String generateTakeCode() {
+        int code = new Random().nextInt(9000) + 1000;
+        return String.valueOf(code);
+    }
 }
-
-

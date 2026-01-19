@@ -3,6 +3,9 @@ package com.example.demo.controller;
 import com.example.demo.domain.Cart;
 import com.example.demo.http.HttpResult;
 import com.example.demo.service.CartService;
+import com.example.demo.vo.AddCartVO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,12 +27,8 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public HttpResult add(@RequestParam Integer userId,
-                          @RequestParam Integer productId,
-                          @RequestParam(defaultValue = "1") Integer quantity,
-                          @RequestParam(required = false) String selectedSpecs) {
-        cartService.addToCart(userId, productId, quantity, selectedSpecs);
-        return HttpResult.ok();
+    public HttpResult addToCart(@RequestBody AddCartVO addCartVO) throws JsonProcessingException {
+        return HttpResult.ok("加入购物车成功", cartService.addToCart(addCartVO));
     }
 
     @PostMapping("/update")

@@ -13,6 +13,9 @@
         <result column="is_selected" property="isSelected"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_image" property="productImage"/>
+        <result column="spec_ids" property="specIds"/>
     </resultMap>
 
     <select id="selectById" resultMap="CartResultMap">
@@ -52,6 +55,18 @@
     <delete id="deleteByUserId">
         delete from cart where user_id = #{userId}
     </delete>
+
+    <insert id="insertCartWithSpecIds">
+        INSERT INTO cart (
+            user_id, product_id, product_name, product_image,
+            spec_ids, quantity, selected_specs, unit_price,
+            is_selected, create_time, update_time
+        ) VALUES (
+                     #{userId}, #{productId}, #{productName}, #{productImage},
+                     #{specIds}, #{quantity}, #{selectedSpecs}, #{unitPrice},
+                     #{isSelected}, #{createTime}, #{updateTime}
+                 )
+    </insert>
 </mapper>
 
 

@@ -1,14 +1,17 @@
 package com.example.demo.domain;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 订单表
  */
 @Data
+@TableName("Order")
 public class Order {
     private Integer id;
     private String orderNo;
@@ -16,7 +19,7 @@ public class Order {
     private BigDecimal totalAmount;
     private BigDecimal discountAmount;
     private BigDecimal deliveryFee;
-    private BigDecimal actualAmount;
+    private BigDecimal actualAmount= BigDecimal.valueOf(0.0);
     private Integer paymentMethod;
     private Integer paymentStatus;
     private LocalDateTime paymentTime;
@@ -33,5 +36,6 @@ public class Order {
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }
+
 
 

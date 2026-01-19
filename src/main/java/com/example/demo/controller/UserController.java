@@ -1,111 +1,94 @@
 package com.example.demo.controller;
 
-import com.example.demo.domain.User;
-import com.example.demo.http.HttpResult;
-import com.example.demo.service.UserService;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
 import com.example.demo.domain.Result;
 import com.example.demo.domain.User;
+import com.example.demo.http.HttpResult;
 import com.example.demo.service.UserService;
 import com.example.demo.util.JwtUtil;
 import com.example.demo.util.WxLoginUtil;
 import com.example.demo.vo.LoginResponseVO;
 import com.example.demo.vo.WxCode2SessionVO;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/user")
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    private WxLoginUtil wxLoginUtil;
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final WxLoginUtil wxLoginUtil;
+    private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     /**
-     * 小程序登录 / 注册：根据 openid 同步用户基础信息
+     * 登录请求参数
      */
-//    @PostMapping("/savelogin")
-//    public HttpResult login(@RequestBody User user) {
-//        if (user.getOpenid() == null) {
-//            return HttpResult.error("openid不能为空");
-//        }
-//        User saved = userService.saveOrUpdateByOpenid(user);
-//        return HttpResult.ok(saved);
-//    }
+    public static class LoginRequest {
+        @NotBlank(message = "code不能为空")
+        private String code;
 
-        /**
-         * 登录请求参数
-         */
-        public static class LoginRequest {
-            @NotBlank(message = "code不能为空")
-            private String code;
-
-            public String getCode() {
-                return code;
-            }
-
-            public void setCode(String code) {
-                this.code = code;
-            }
+        public String getCode() {
+            return code;
         }
-        /**
-         * 微信小程序登录接口
-         * @param request 请求参数（code）
-         * @return 登录结果（token+openid+用户信息）
-         */
-        @PostMapping("/login")
-        public Result<LoginResponseVO> login(@Valid @RequestBody LoginRequest request) {
-            // 1. 调用微信接口获取openid
-            WxCode2SessionVO wxResult = wxLoginUtil.getOpenidByCode(request.getCode());
 
-            if (wxResult == null || wxResult.getErrcode() != null && wxResult.getErrcode() != 0) {
-                return Result.fail("微信登录失败：" + (wxResult != null ? wxResult.getErrmsg() : "接口调用失败"));
-            }
-            String openid = wxResult.getOpenid();
-            if (openid == null || openid.isEmpty()) {
-                return Result.fail("获取openid失败");
-            }
-            // 2. 查询/创建用户
-            User user = userService.getUserByOpenid(openid);
-            if (user == null) {
-                user = userService.createUser(openid);
-            }
-            // 3. 生成JWT token
-            String token = jwtUtil.generateToken(openid);
-            // 4. 构建响应结果
-            LoginResponseVO responseVO = new LoginResponseVO();
-            responseVO.setToken(token);
-            responseVO.setOpenid(openid);
-
-            LoginResponseVO.UserInfoVO userInfoVO = new LoginResponseVO.UserInfoVO();
-            userInfoVO.setNickname(user.getNickname());
-            userInfoVO.setAvatar(user.getAvatarUrl());
-            responseVO.setUserInfo(userInfoVO);
-            return Result.success(responseVO);
+        public void setCode(String code) {
+            this.code = code;
         }
+    }
+    /**
+     * 微信小程序登录接口
+     * @param request 请求参数（code）
+     * @return 登录结果（token+openid+用户信息）
+     */
+    @PostMapping("/login")
+    public Result<LoginResponseVO> login(@Valid @RequestBody LoginRequest request) {
+        // 1. 调用微信接口获取openid
+        WxCode2SessionVO wxResult = wxLoginUtil.getOpenidByCode(request.getCode());
+
+        if (wxResult == null || (wxResult.getErrcode() != null && wxResult.getErrcode() != 0)) {
+            log.warn("微信登录失败，errcode：{}，errmsg：{}", 
+                    wxResult != null ? wxResult.getErrcode() : "null",
+                    wxResult != null ? wxResult.getErrmsg() : "接口调用失败");
+            return Result.fail("微信登录失败：" + (wxResult != null ? wxResult.getErrmsg() : "接口调用失败"));
+        }
+        String openid = wxResult.getOpenid();
+        if (openid == null || openid.isEmpty()) {
+            log.warn("获取openid失败");
+            return Result.fail("获取openid失败");
+        }
+        // 2. 查询/创建用户
+        User user = userService.getUserByOpenid(openid);
+        if (user == null) {
+            user = userService.createUser(openid);
+        }
+        // 3. 生成JWT token
+        String token = jwtUtil.generateToken(openid);
+        log.info("用户登录成功，userId：{}，openid：{}", user.getId(), openid);
+        // 4. 构建响应结果
+        LoginResponseVO responseVO = new LoginResponseVO();
+        responseVO.setToken(token);
+        responseVO.setOpenid(openid);
+
+        LoginResponseVO.UserInfoVO userInfoVO = new LoginResponseVO.UserInfoVO();
+        userInfoVO.setNickname(user.getNickname());
+        userInfoVO.setAvatar(user.getAvatarUrl());
+        responseVO.setUserInfo(userInfoVO);
+        return Result.success(responseVO);
+    }
 
     /**
      * 检查token有效性
-     * @return
+     * @return token校验结果
      */
-    // 新增：校验 token 有效性接口
     @GetMapping("/checkToken")
     public Map<String, Object> checkToken() {
         Map<String, Object> result = new HashMap<>();
@@ -121,6 +104,7 @@ public class UserController {
                 result.put("msg", "token 无效");
             }
         } catch (Exception e) {
+            log.warn("token校验异常：", e);
             result.put("code", 401);
             result.put("msg", "token 过期/无效");
         }
@@ -128,14 +112,17 @@ public class UserController {
     }
 
     /**
-     *
-     * @param userId
-     * @param request
-     * @return
+     * 管理员更新用户状态
+     * @param userId 用户ID
+     * @param request 请求参数（包含status）
+     * @return 更新结果
      */
     @PostMapping("/admin/user/updateStatus/{userId}")
     public HttpResult adminUpdateUserStatus(@PathVariable Integer userId, @RequestBody Map<String, Integer> request) {
         Integer status = request.get("status");
+        if (status == null) {
+            return HttpResult.error("状态不能为空");
+        }
         userService.updateUserStatus(userId, status);
         return HttpResult.ok("更新成功");
     }

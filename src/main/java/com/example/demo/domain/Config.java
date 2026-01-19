@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Data
 @TableName("Config") // 对应数据库分类表
 public class Config {
-
     private Integer id;
     private String configKey;
     private String configValue;

@@ -1,6 +1,9 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.Cart;
+import com.example.demo.vo.AddCartVO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -8,7 +11,7 @@ public interface CartService {
 
     List<Cart> listUserCart(Integer userId);
 
-    void addToCart(Integer userId, Integer productId, Integer quantity, String selectedSpecs);
+    AddCartVO addToCart(AddCartVO addCartVO) throws JsonProcessingException;
 
     void updateCartItem(Integer cartId, Integer quantity, String selectedSpecs, Boolean selected);
 
