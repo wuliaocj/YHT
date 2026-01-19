@@ -108,7 +108,7 @@ public class PaymentServiceImpl implements PaymentService {
         // 3. 处理支付成功
         if ("SUCCESS".equals(tradeState)) {
             LocalDateTime now = LocalDateTime.now();
-            
+
             // 更新支付记录
             paymentRecord.setPaymentStatus(PaymentStatusEnum.PAID.getCode());
             paymentRecord.setTransactionId(transactionId);
@@ -167,7 +167,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        
+
         // 更新支付记录
         paymentRecord.setPaymentStatus(PaymentStatusEnum.PAID.getCode());
         paymentRecord.setTransactionId("MOCK_" + System.currentTimeMillis());
@@ -184,7 +184,6 @@ public class PaymentServiceImpl implements PaymentService {
             order.setOrderStatus(OrderStatusEnum.PAID.getCode());
             orderMapper.update(order);
         }
-
         log.info("模拟支付成功，orderNo：{}", orderNo);
         return true;
     }
@@ -205,7 +204,7 @@ public class PaymentServiceImpl implements PaymentService {
         params.put("orderNo", paymentRecord.getOrderNo());
         params.put("amount", paymentRecord.getAmount());
         params.put("paymentMethod", paymentRecord.getPaymentMethod());
-        
+
         // 模拟微信支付参数（实际需要调用微信SDK）
         if (paymentRecord.getPaymentMethod() == 1) { // 微信支付
             params.put("appId", "wx70e7b0411521d834");
@@ -215,7 +214,7 @@ public class PaymentServiceImpl implements PaymentService {
             params.put("signType", "RSA");
             params.put("paySign", "mock_sign_" + paymentRecord.getPaymentNo());
         }
-        
+
         return params;
     }
 

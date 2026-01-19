@@ -122,22 +122,6 @@ public class OrderController {
         return HttpResult.ok("更新成功");
     }
 
-
-//    // 模拟支付成功接口
-//    @PostMapping("/mock/success")
-//    public HttpResult mockPaySuccess(@RequestParam String orderNo) {
-//        PaymentRecord record = paymentRecordMapper.selectByOrderNo(orderNo);
-//        record.setPaymentStatus(1);
-//        record.setPayTime(LocalDateTime.now());
-//        paymentRecordMapper.updateById(record);
-//
-//        Order order = orderMapper.selectByOrderNo(orderNo);
-//        order.setPaymentStatus(1);
-//        order.setOrderStatus(1);
-//        orderMapper.updateById(order);
-//        return HttpResult.ok();
-//    }
-
 }
 
 

@@ -39,6 +39,12 @@ public class ProductController {
     public HttpResult listProduct() {
         return HttpResult.ok( "商品查询成功",productService.getProductList());
     }
+
+    @GetMapping("/user/list")
+    public HttpResult listUserProduct() {
+        return HttpResult.ok("用户商品查询成功",productService.getProductList());
+    }
+
 }
 
 

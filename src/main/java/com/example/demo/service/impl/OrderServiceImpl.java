@@ -153,9 +153,7 @@ public class OrderServiceImpl implements OrderService {
     // 生成订单号
     private String generateOrderNo() {
         return "ORD" + System.currentTimeMillis() + new Random().nextInt(1000);
-    }
-
-    // 生成取餐码
+    }    // 生成取餐码
     private String generateTakeCode() {
         int code = new Random().nextInt(9000) + 1000;
         return String.valueOf(code);

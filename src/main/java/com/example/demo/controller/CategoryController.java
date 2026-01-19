@@ -5,6 +5,8 @@ import com.example.demo.http.HttpResult;
 import com.example.demo.mapper.CategoryMapper;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api")
 public class CategoryController {
@@ -13,6 +15,12 @@ public class CategoryController {
 
     public CategoryController(CategoryMapper categoryMapper) {
         this.categoryMapper = categoryMapper;
+    }
+
+    @GetMapping("/admin/category/list")
+    public HttpResult getAll() {
+        List<Category> categories = categoryMapper.selectAll();
+        return HttpResult.ok(categories);
     }
 
     @PostMapping("/admin/category/save")
