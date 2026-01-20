@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.PaymentRecordMapper">
+
+    <resultMap id="PaymentRecordResultMap" type="com.example.demo.domain.PaymentRecord">
+        <id column="id" property="id"/>
+        <result column="order_no" property="orderNo"/>
+        <result column="payment_no" property="paymentNo"/>
+        <result column="user_id" property="userId"/>
+        <result column="amount" property="amount"/>
+        <result column="payment_method" property="paymentMethod"/>
+        <result column="payment_status" property="paymentStatus"/>
+        <result column="transaction_id" property="transactionId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="pay_time" property="payTime"/>
+        <result column="callback_time" property="callbackTime"/>
+        <result column="callback_content" property="callbackContent"/>
+        <result column="refund_amount" property="refundAmount"/>
+        <result column="refund_time" property="refundTime"/>
+        <result column="refund_reason" property="refundReason"/>
+    </resultMap>
+
+    <select id="selectByOrderNo" resultMap="PaymentRecordResultMap">
+        select * from payment_record where order_no = #{orderNo} order by create_time desc limit 1
+    </select>
+
+    <select id="selectByPaymentNo" resultMap="PaymentRecordResultMap">
+        select * from payment_record where payment_no = #{paymentNo}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into payment_record(order_no, payment_no, user_id, amount, payment_method, payment_status,
+                                   transaction_id, create_time, pay_time, callback_time, callback_content,
+                                   refund_amount, refund_time, refund_reason)
+        values (#{orderNo}, #{paymentNo}, #{userId}, #{amount}, #{paymentMethod}, #{paymentStatus},
+                #{transactionId}, #{createTime}, #{payTime}, #{callbackTime}, #{callbackContent},
+                #{refundAmount}, #{refundTime}, #{refundReason})
+    </insert>
+
+    <update id="update">
+        update payment_record
+        set order_no         = #{orderNo},
+            payment_no       = #{paymentNo},
+            user_id          = #{userId},
+            amount           = #{amount},
+            payment_method   = #{paymentMethod},
+            payment_status   = #{paymentStatus},
+            transaction_id   = #{transactionId},
+            pay_time         = #{payTime},
+            callback_time    = #{callbackTime},
+            callback_content = #{callbackContent},
+            refund_amount    = #{refundAmount},
+            refund_time      = #{refundTime},
+            refund_reason    = #{refundReason}
+        where id = #{id}
+    </update>
+</mapper>
