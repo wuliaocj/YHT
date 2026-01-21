@@ -66,6 +66,7 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
         Integer quantity = addCartVO.getQuantity();
         Long cupSpecId = addCartVO.getCupSpecId();
         Long tasteSpecId = addCartVO.getTasteSpecId();
+        Long temperatureSpecId = addCartVO.getTemperatureSpecId();
         List<Long> toppingSpecIds = addCartVO.getToppingSpecIds();
 
         if (quantity < 1) {
@@ -94,7 +95,15 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
             }
             tasteSpecName = tasteSpec.getSpecName();
         }
-
+        // 4.5 查询并校验温度规格
+        String temperatureSpecName = "";
+        if (temperatureSpecId != null) {
+            ProductSpecPrice temperatureSpec = productSpecPriceService.getById(temperatureSpecId);
+            if (temperatureSpec == null || !"temperature".equals(temperatureSpec.getSpecType()) || temperatureSpec.getStatus() == 0) {
+                throw new BusinessException("温度规格无效或已下架");
+            }
+            temperatureSpecName = temperatureSpec.getSpecName();
+        }
         // 5. 查询并校验小料规格
         String toppingSpecNames = "";
         List<ProductSpecPrice> toppingSpecList = List.of();
@@ -118,9 +127,12 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
         // 6.1 构建specMap（使用LinkedHashMap+统一空值处理，配合JsonUtil的排序）
         Map<String, Object> specMap = new LinkedHashMap<>(); // 先按插入顺序，最终JsonUtil会按key排序
         // 统一空值处理：避免tasteSpecId=null序列化出不同结果
-        specMap.put("tasteSpecId", tasteSpecId); // JsonUtil已配置Include.ALWAYS，null会正常序列化
+        specMap.put("tasteSpecIds", tasteSpecId); // JsonUtil已配置Include.ALWAYS，null会正常序列化
         specMap.put("toppingSpecIds", toppingSpecIds == null ? new ArrayList<>() : toppingSpecIds); // 杜绝null，统一为空列表
         specMap.put("cupSpecId", cupSpecId);
+        specMap.put("temperatureSpecId", temperatureSpecId);
+
+
 
         // 6.2 用你的JsonUtil序列化（已配置标准化）
         String specIds = JsonUtil.toJson(specMap);
@@ -133,6 +145,9 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
         }
         if (!toppingSpecNames.isEmpty()) {
             selectedSpecsBuilder.append("/").append(toppingSpecNames);
+        }
+        if (!temperatureSpecName.isEmpty()) {
+            selectedSpecsBuilder.append("/").append(temperatureSpecName);
         }
         String selectedSpecs = selectedSpecsBuilder.toString();
 
@@ -151,7 +166,6 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
                 .eq(Cart::getSpecIds, specIds);
         Cart existCart = this.getOne(wrapper);
         log.debug("查询结果：{}", existCart);
-
 
 
         if (existCart != null) {

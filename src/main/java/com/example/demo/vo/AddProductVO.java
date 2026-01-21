@@ -1,7 +1,5 @@
 package com.example.demo.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.example.demo.domain.ProductSpecPrice;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -41,7 +39,6 @@ public class AddProductVO {
     @PositiveOrZero(message = "基础价格不能为负数")
     private Double originalPrice;
 
-
     /**
      * 排序序号
      */
@@ -76,6 +73,18 @@ public class AddProductVO {
      */
     @NotNull(message = "杯型规格不能为空")
     private List<ProductSpecPrice> cupTypeList;
+
+    /**
+     * 口味规格列表（必填，至少包含一种口味）
+     */
+    @NotNull(message = "口味规格不能为空")
+    private List<ProductSpecPrice> tasteList;
+
+    /**
+     * 温度规格列表（必填，至少包含一种温度）
+     */
+    @NotNull(message = "温度规格不能为空")
+    private List<ProductSpecPrice> temperatureList;
 
     /**
      * 小料规格列表（可选，无小料则传空列表）

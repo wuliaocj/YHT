@@ -4,7 +4,6 @@ import com.example.demo.domain.Admin;
 import com.example.demo.http.HttpResult;
 import com.example.demo.service.AdminService;
 import com.example.demo.service.OrderService;
-import com.example.demo.service.ProductService;
 import com.example.demo.service.UserService;
 import com.example.demo.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ public class AdminController {
     private final JwtUtil jwtUtil;
     private final UserService userService;
     private final OrderService orderService;
-    private final ProductService productService;
 
     /**
      * 管理员登录
@@ -89,7 +87,5 @@ public class AdminController {
         log.debug("管理员查询订单列表，订单数量：{}", orders.size());
         return HttpResult.ok(orders);
     }
-
-
 
 }

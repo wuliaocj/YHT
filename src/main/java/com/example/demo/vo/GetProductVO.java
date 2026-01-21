@@ -18,6 +18,10 @@ public class GetProductVO {
     private List<ProductSpecVO> cupTypeList;
     /** 小料规格列表（type=topping，状态=1） */
     private List<ProductSpecVO> toppingList;
+    /** 温度规格列表（type=temperature，状态=1） */
+    private List<ProductSpecVO> temperatureList;
+    /** 口味规格列表（type=taste，状态=1） */
+    private List<ProductSpecVO> humidityList;
     /** 商品描述 */
     private String description;
     /** 商品详情 */

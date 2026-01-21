@@ -3,13 +3,12 @@ package com.example.demo.controller;
 import com.example.demo.domain.Order;
 import com.example.demo.http.HttpResult;
 import com.example.demo.service.OrderService;
-import com.example.demo.vo.CreateOrderDTO;
+import com.example.demo.vo.PageRequestVO;
+import com.example.demo.vo.PageResponseVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -61,9 +60,6 @@ public class OrderController {
         return HttpResult.ok(createdOrder);
     }
 
-
-
-
     /**
      * 根据用户ID获取订单
      * @param userId 用户ID
@@ -92,14 +88,17 @@ public class OrderController {
     }
 
     /**
-     * 管理员获取订单列表
-     * @return 所有订单列表
+     * 管理员获取订单列表（分页）
+     * @param pageRequest 分页请求参数
+     * @return 分页订单列表
      */
     @GetMapping("/admin/order/list")
-    public HttpResult adminListOrders() {
-        List<Order> orders = orderService.listAllOrders();
-        log.debug("管理员查询订单列表，订单数量：{}", orders.size());
-        return HttpResult.ok(orders);
+    public HttpResult adminListOrders(PageRequestVO pageRequest) {
+        pageRequest.validate();
+        PageResponseVO<Order> pageResponse = orderService.listOrdersByPage(pageRequest);
+        log.debug("管理员查询订单列表，页码：{}，每页大小：{}，总记录数：{}",
+                pageRequest.getPageNum(), pageRequest.getPageSize(), pageResponse.getTotal());
+        return HttpResult.ok(pageResponse);
     }
 
     /**
@@ -123,5 +122,3 @@ public class OrderController {
     }
 
 }
-
-

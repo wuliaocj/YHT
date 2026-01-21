@@ -55,7 +55,7 @@ public class UserController {
         WxCode2SessionVO wxResult = wxLoginUtil.getOpenidByCode(request.getCode());
 
         if (wxResult == null || (wxResult.getErrcode() != null && wxResult.getErrcode() != 0)) {
-            log.warn("微信登录失败，errcode：{}，errmsg：{}", 
+            log.warn("微信登录失败，errcode：{}，errmsg：{}",
                     wxResult != null ? wxResult.getErrcode() : "null",
                     wxResult != null ? wxResult.getErrmsg() : "接口调用失败");
             return Result.fail("微信登录失败：" + (wxResult != null ? wxResult.getErrmsg() : "接口调用失败"));
@@ -127,5 +127,3 @@ public class UserController {
         return HttpResult.ok("更新成功");
     }
 }
-
-

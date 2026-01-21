@@ -87,6 +87,30 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 }
                 log.info("保存小料规格数量：{}", toppingList.size());
             }
+            // 保存口味
+            List<ProductSpecPrice> tasteList = addProductVO.getTasteList();
+            if (!CollectionUtils.isEmpty(tasteList)) {
+                for (ProductSpecPrice productSpecPrice : tasteList) {
+                    productSpecPrice.setProductId(product.getId());
+                    productSpecPrice.setSpecType("taste");
+                    productSpecPrice.setCreateTime(LocalDateTime.now());
+                    productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    productSpecPriceMapper.insert(productSpecPrice);
+                }
+                log.info("保存口味规格数量：{}", tasteList.size());
+            }
+            // 保存温度
+            List<ProductSpecPrice> temperatureList = addProductVO.getTemperatureList();
+            if (!CollectionUtils.isEmpty(temperatureList)) {
+                for (ProductSpecPrice productSpecPrice : temperatureList) {
+                    productSpecPrice.setProductId(product.getId());
+                    productSpecPrice.setSpecType("temperature");
+                    productSpecPrice.setCreateTime(LocalDateTime.now());
+                    productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    productSpecPriceMapper.insert(productSpecPrice);
+                }
+                log.info("保存温度规格数量：{}", temperatureList.size());
+            }
             return "保存成功";
         } catch (Exception e) {
             log.error("保存商品失败：", e);
@@ -114,7 +138,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         List<ProductSpecVO> cupTypeList = cupTypeSpecList.stream()
                 .map(this::convertToSpecVO)
                 .collect(Collectors.toList());
-
         // 3. 查询小料规格（type=topping，status=1）
         LambdaQueryWrapper<ProductSpecPrice> toppingWrapper = new LambdaQueryWrapper<>();
         toppingWrapper.eq(ProductSpecPrice::getProductId, id)
@@ -124,11 +147,32 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         List<ProductSpecVO> toppingList = toppingSpecList.stream()
                 .map(this::convertToSpecVO)
                 .collect(Collectors.toList());
+        // 4. 查询温度规格（type=temperature，status=1）
+        LambdaQueryWrapper<ProductSpecPrice> temperatureWrapper = new LambdaQueryWrapper<>();
+        temperatureWrapper.eq(ProductSpecPrice::getProductId, id)
+                .eq(ProductSpecPrice::getSpecType, "temperature")
+                .eq(ProductSpecPrice::getStatus, 1);
+        List<ProductSpecPrice> temperatureSpecList = productSpecPriceService.list(temperatureWrapper);
+        List<ProductSpecVO> temperatureList = temperatureSpecList.stream()
+                .map(this::convertToSpecVO)
+                .collect(Collectors.toList());
+        // 5. 查询口味规格（type=taste，status=1）
+        LambdaQueryWrapper<ProductSpecPrice> tasteWrapper = new LambdaQueryWrapper<>();
+        tasteWrapper.eq(ProductSpecPrice::getProductId, id)
+                .eq(ProductSpecPrice::getSpecType, "taste")
+                .eq(ProductSpecPrice::getStatus, 1);
+        List<ProductSpecPrice> tasteSpecList = productSpecPriceService.list(tasteWrapper);
+        List<ProductSpecVO> tasteList = tasteSpecList.stream()
+                .map(this::convertToSpecVO)
+                .collect(Collectors.toList());
+
 
         // 4. 组装GetProductVO（复用buildProductVO方法）
         Map<String, List<ProductSpecPrice>> specsMap = Map.of(
                 "cup_type", cupTypeSpecList,
-                "topping", toppingSpecList
+                "topping", toppingSpecList,
+                "temperature", temperatureSpecList,
+                "taste", tasteSpecList
         );
         return buildProductVO(product, specsMap);
     }
@@ -167,6 +211,62 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Object updateProduct(AddProductVO addProductVO) {
+        try {
+            // 保存商品
+            Product product = new Product();
+            product.setCategoryId(addProductVO.getCategoryId());
+            product.setName(addProductVO.getName());
+            product.setDescription(addProductVO.getDescription());
+            product.setDetail(addProductVO.getDetail());
+            product.setMainImage(addProductVO.getMainImage());
+            product.setBasePrice(BigDecimal.valueOf(addProductVO.getBasePrice()));
+            product.setOriginPrice(BigDecimal.valueOf(addProductVO.getOriginalPrice()));
+            product.setIsHot(addProductVO.getIsHot());
+            product.setIsNew(addProductVO.getIsNew());
+            product.setIsRecommend(addProductVO.getIsRecommend());
+            product.setStatus(addProductVO.getStatus());
+            product.setSortOrder(addProductVO.getSort_order());
+            product.setCreateTime(LocalDateTime.now());
+            product.setUpdateTime(LocalDateTime.now());
+            int insertResult = productMapper.update(product);
+            log.info("商品保存成功，商品ID：{}，插入结果：{}", product.getId(), insertResult);
+
+            // 保存杯型
+            List<ProductSpecPrice> cupTypeList = addProductVO.getCupTypeList();
+            if (!CollectionUtils.isEmpty(cupTypeList)) {
+
+                for (ProductSpecPrice productSpecPrice : cupTypeList) {
+
+                    productSpecPrice.setProductId(product.getId());
+                    productSpecPrice.setSpecType("cup_type");
+                    productSpecPrice.setCreateTime(LocalDateTime.now());
+                    productSpecPrice.setUpdateTime(LocalDateTime.now());
+
+                    productSpecPriceMapper.insert(productSpecPrice);
+                }
+                log.info("保存杯型规格数量：{}", cupTypeList.size());
+            }
+            // 保存小料
+            List<ProductSpecPrice> toppingList = addProductVO.getToppingList();
+            if (!CollectionUtils.isEmpty(toppingList)) {
+                for (ProductSpecPrice productSpecPrice : toppingList) {
+                    productSpecPrice.setProductId(product.getId());
+                    productSpecPrice.setSpecType("topping");
+                    productSpecPrice.setCreateTime(LocalDateTime.now());
+                    productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    productSpecPriceMapper.insert(productSpecPrice);
+                }
+                log.info("保存小料规格数量：{}", toppingList.size());
+            }
+            return "保存成功";
+        } catch (Exception e) {
+            log.error("保存商品失败：", e);
+            throw new BusinessException("保存商品失败：" + e.getMessage());
+        }
+    }
+
     /**
      * 构建商品VO（复用逻辑）
      */
@@ -201,7 +301,51 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 .collect(Collectors.toList());
         vo.setToppingList(toppingList);
 
+        // 转换温度规格
+        List<ProductSpecPrice> specsByProductId = specsMap.getOrDefault("temperature", List.of());
+        List<ProductSpecVO> temperatureList = specsByProductId.stream()
+                .map(this::convertToSpecVO)
+                .collect(Collectors.toList());
+        vo.setTemperatureList(temperatureList);
+
+        // 转换口味规格
+        List<ProductSpecPrice> tasteSpecs = specsMap.getOrDefault("taste", List.of());
+        List<ProductSpecVO> tasteList = tasteSpecs.stream()
+                .map(this::convertToSpecVO)
+                .collect(Collectors.toList());
+        vo.setHumidityList(tasteList);
+
         return vo;
+    }
+
+    /**
+     * 删除商品（同时删除关联的规格）
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteProduct(Long productId) {
+        try {
+            // 1. 检查商品是否存在
+            Product product = this.getById(productId);
+            if (product == null) {
+                throw new BusinessException(404, "商品不存在");
+            }
+
+            // 2. 删除商品关联的规格
+            LambdaQueryWrapper<ProductSpecPrice> specWrapper = new LambdaQueryWrapper<>();
+            specWrapper.eq(ProductSpecPrice::getProductId, productId);
+            productSpecPriceService.remove(specWrapper);
+            log.info("删除商品规格成功，商品ID：{}", productId);
+
+            // 3. 删除商品
+            this.removeById(productId);
+            log.info("删除商品成功，商品ID：{}", productId);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("删除商品失败：", e);
+            throw new BusinessException("删除商品失败：" + e.getMessage());
+        }
     }
 
     /**

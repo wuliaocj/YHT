@@ -34,4 +34,6 @@ public class BannerController {
         bannerService.delete(id);
         return HttpResult.ok("删除成功");
     }
+
+
 }

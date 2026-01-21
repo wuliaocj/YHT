@@ -12,15 +12,18 @@ import com.example.demo.mapper.OrderItemMapper;
 import com.example.demo.mapper.OrderMapper;
 import com.example.demo.service.OrderItemService;
 import com.example.demo.service.OrderService;
+import com.example.demo.util.SnowflakeIdGenerator;
 import com.example.demo.vo.CreateOrderDTO;
-
 import com.example.demo.vo.OrderItemDTO;
+import com.example.demo.vo.PageRequestVO;
+import com.example.demo.vo.PageResponseVO;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -38,6 +41,8 @@ public class OrderServiceImpl implements OrderService {
     private  OrderMapper orderMapper;
     @Autowired
     private  OrderItemMapper orderItemMapper;
+    @Autowired
+    private SnowflakeIdGenerator snowflakeIdGenerator;
 
 
     /**
@@ -66,13 +71,17 @@ public class OrderServiceImpl implements OrderService {
                 .map(cart -> cart.getUnitPrice().multiply(new BigDecimal(cart.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 3.2 补全订单金额相关字段
+        // 3.2 补全订单金额相关字段（使用标准舍入模式）
         BigDecimal discountAmount = order.getDiscountAmount() == null ? BigDecimal.ZERO : order.getDiscountAmount();
         BigDecimal deliveryFee = order.getDeliveryFee() == null ? BigDecimal.ZERO : order.getDeliveryFee();
+        
         // 实际支付金额 = 商品总价 + 配送费 - 优惠金额（最小为0）
+        // 使用银行家舍入法（RoundingMode.HALF_EVEN）确保精度
         BigDecimal actualAmount = productTotal.add(deliveryFee).subtract(discountAmount);
+        actualAmount = actualAmount.setScale(2, RoundingMode.HALF_EVEN);
+        
         if (actualAmount.compareTo(BigDecimal.ZERO) < 0) {
-            actualAmount = BigDecimal.ZERO;
+            actualAmount = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_EVEN);
         }
 
         // 步骤4：组装订单主表数据
@@ -150,9 +159,54 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(order);
     }
 
-    // 生成订单号
+    @Override
+    public PageResponseVO<Order> listOrdersByPage(PageRequestVO pageRequest) {
+        // 构建查询条件
+        LambdaQueryWrapper<Order> queryWrapper = new LambdaQueryWrapper<>();
+        
+        // 添加排序条件
+        if (pageRequest.getOrderBy() != null && !pageRequest.getOrderBy().isEmpty()) {
+            switch (pageRequest.getOrderBy()) {
+                case "createTime":
+                    queryWrapper.orderBy(true, "desc".equals(pageRequest.getOrderDirection()), Order::getCreateTime);
+                    break;
+                case "actualAmount":
+                    queryWrapper.orderBy(true, "desc".equals(pageRequest.getOrderDirection()), Order::getActualAmount);
+                    break;
+                case "orderStatus":
+                    queryWrapper.orderBy(true, "desc".equals(pageRequest.getOrderDirection()), Order::getOrderStatus);
+                    break;
+                default:
+                    queryWrapper.orderByDesc(Order::getCreateTime);
+                    break;
+            }
+        } else {
+            // 默认按创建时间倒序
+            queryWrapper.orderByDesc(Order::getCreateTime);
+        }
+        
+        // 执行分页查询
+        List<Order> records = orderMapper.selectList(queryWrapper);
+        Long total = orderMapper.selectCount(queryWrapper);
+        
+        // 手动分页（如果使用MyBatis-Plus的分页插件，可以直接使用）
+        int offset = pageRequest.getOffset();
+        int limit = pageRequest.getPageSize();
+        
+        List<Order> pagedRecords;
+        if (offset >= records.size()) {
+            pagedRecords = new java.util.ArrayList<>();
+        } else {
+            int endIndex = Math.min(offset + limit, records.size());
+            pagedRecords = records.subList(offset, endIndex);
+        }
+        
+        return PageResponseVO.of(pagedRecords, total, pageRequest.getPageNum(), pageRequest.getPageSize());
+    }
+
+    // 生成订单号（使用雪花算法）
     private String generateOrderNo() {
-        return "ORD" + System.currentTimeMillis() + new Random().nextInt(1000);
+        return snowflakeIdGenerator.generateOrderNo("ORD");
     }    // 生成取餐码
     private String generateTakeCode() {
         int code = new Random().nextInt(9000) + 1000;

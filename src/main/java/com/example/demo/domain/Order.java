@@ -11,7 +11,7 @@ import java.util.List;
  * 订单表
  */
 @Data
-@TableName("Order")
+@TableName("`Order`") // 反引号包裹关键字表名
 public class Order {
     private Integer id;
     private String orderNo;

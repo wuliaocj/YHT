@@ -30,6 +30,10 @@ public interface ProductService extends IService<Product> {
     GetProductVO getProductById(Long productId);
 
     List<GetProductVO> getProductList();
+
+    Object updateProduct(AddProductVO addProductVO);
+
+    void deleteProduct(Long productId);
 }
 
 

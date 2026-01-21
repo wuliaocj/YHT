@@ -40,9 +40,20 @@ public class ProductController {
         return HttpResult.ok( "商品查询成功",productService.getProductList());
     }
 
+    @PostMapping("/admin/update")
+    public HttpResult updateProduct(@Valid @RequestBody AddProductVO addProductVO) {
+        return HttpResult.ok("商品修改成功",productService.updateProduct(addProductVO));
+    }
+
     @GetMapping("/user/list")
     public HttpResult listUserProduct() {
         return HttpResult.ok("用户商品查询成功",productService.getProductList());
+    }
+
+    @PostMapping("/admin/delete/{id}")
+    public HttpResult deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return HttpResult.ok("商品删除成功");
     }
 
 }

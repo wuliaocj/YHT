@@ -48,11 +48,20 @@ public class AddCartVO {
     private Long cupSpecId;
 
     /**
-     * 口味规格ID（可选）
-     * 如少糖/正常糖/去冰/常温，无则传null
+     * 口味规格ID（必填）
+     * 如少糖/正常糖，默认全糖
      */
-    @Schema(description = "口味规格ID", example = "30")
+    @NotNull(message = "口味规格不能为空")
+    @Schema(description = "口味规格ID", example = "[23,24]")
     private Long tasteSpecId;
+
+    /**
+     * 温度规格ID（必填）
+     * 如去冰/常温，默认常温
+     */
+    @NotNull(message = "温度规格不能为空")
+    @Schema(description = "温度规格ID", example = "[23,24]")
+    private Long temperatureSpecId;
 
     /**
      * 小料规格ID列表（可选）
