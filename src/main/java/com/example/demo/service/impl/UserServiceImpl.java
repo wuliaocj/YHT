@@ -41,6 +41,7 @@ public class UserServiceImpl implements UserService {
             return userMapper.selectById(db.getId());
         }
     }
+
     @Override
     public User getUserByOpenid(String openid) {
         return userMapper.selectByOpenid(openid);

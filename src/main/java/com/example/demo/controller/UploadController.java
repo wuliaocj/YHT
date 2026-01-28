@@ -45,8 +45,8 @@ public class UploadController {
             try {
                 // 3.1 校验文件大小（也可通过配置文件限制，此处兜底）
                 long fileSize = file.getSize();
-                if (fileSize > 2 * 1024 * 1024) { // 2MB
-                    return Result.fail("文件" + file.getOriginalFilename() + "超过2MB，无法上传");
+                if (fileSize > 12 * 1024 * 1024) { // 12MB
+                    return Result.fail("文件" + file.getOriginalFilename() + "超过12MB，无法上传");
                 }
 
                 // 3.2 校验文件格式
@@ -85,9 +85,4 @@ public class UploadController {
         return Result.success(uploadUrls);
     }
 
-    @GetMapping("getImage/{name}")
-    public HttpResult getImage(@PathVariable("name") String name) {
-
-        return HttpResult.ok();
-    }
 }

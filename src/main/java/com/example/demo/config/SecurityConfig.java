@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/banner/list").permitAll()
                         .requestMatchers("/api/category/list").permitAll()
                         .requestMatchers("/api/order/admin/order/list").permitAll()//零时添加，后续找到方法再修改
+                        .requestMatchers("/upload/**").permitAll() // 允许公开访问上传的文件
                         .requestMatchers("/error").permitAll()
 
                         // 管理员接口（需要ADMIN角色）

@@ -25,7 +25,7 @@ public class User {
     private Integer vipLevel;
     private BigDecimal totalConsumption;
     private LocalDateTime lastLoginTime;
-    private Integer status;
+    private Integer status=1;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 }
