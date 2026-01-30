@@ -14,6 +14,11 @@ import java.util.List;
 public class AddProductVO {
 
     /**
+     * 商品ID（编辑时必填）
+     */
+    private Long productId;
+
+    /**
      * 商品名称（必填）
      */
     @NotBlank(message = "商品名称不能为空")
@@ -75,15 +80,13 @@ public class AddProductVO {
     private List<ProductSpecPrice> cupTypeList;
 
     /**
-     * 口味规格列表（必填，至少包含一种口味）
+     * 口味规格列表（可选，无口味则传空列表）
      */
-    @NotNull(message = "口味规格不能为空")
     private List<ProductSpecPrice> tasteList;
 
     /**
-     * 温度规格列表（必填，至少包含一种温度）
+     * 温度规格列表（可选，无温度则传空列表）
      */
-    @NotNull(message = "温度规格不能为空")
     private List<ProductSpecPrice> temperatureList;
 
     /**

@@ -21,7 +21,7 @@ public class GetProductVO {
     /** 温度规格列表（type=temperature，状态=1） */
     private List<ProductSpecVO> temperatureList;
     /** 口味规格列表（type=taste，状态=1） */
-    private List<ProductSpecVO> humidityList;
+    private List<ProductSpecVO> tasteList;
     /** 商品描述 */
     private String description;
     /** 商品详情 */

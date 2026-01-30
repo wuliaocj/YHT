@@ -212,47 +212,89 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
-    public Object updateProduct(AddProductVO addProductVO) {
+    @Transactional(rollbackFor = Exception.class)
+    public String updateProduct(AddProductVO addProductVO) {
         try {
-            // 保存商品
-            Product product = new Product();
-            product.setCategoryId(addProductVO.getCategoryId());
-            product.setName(addProductVO.getName());
-            product.setDescription(addProductVO.getDescription());
-            product.setDetail(addProductVO.getDetail());
-            product.setMainImage(addProductVO.getMainImage());
-            product.setBasePrice(BigDecimal.valueOf(addProductVO.getBasePrice()));
-            product.setOriginPrice(BigDecimal.valueOf(addProductVO.getOriginalPrice()));
-            product.setIsHot(addProductVO.getIsHot());
-            product.setIsNew(addProductVO.getIsNew());
-            product.setIsRecommend(addProductVO.getIsRecommend());
-            product.setStatus(addProductVO.getStatus());
-            product.setSortOrder(addProductVO.getSort_order());
-            product.setCreateTime(LocalDateTime.now());
-            product.setUpdateTime(LocalDateTime.now());
-            int insertResult = productMapper.update(product);
-            log.info("商品保存成功，商品ID：{}，插入结果：{}", product.getId(), insertResult);
+            // 验证商品ID
+            Long productId = addProductVO.getProductId();
+            if (productId == null) {
+                throw new BusinessException("商品ID不能为空");
+            }
+            
+            // 查询现有商品
+            Product existingProduct = this.getById(productId);
+            if (existingProduct == null) {
+                throw new BusinessException(404, "商品不存在");
+            }
+            
+            // 更新商品信息
+            existingProduct.setCategoryId(addProductVO.getCategoryId());
+            existingProduct.setName(addProductVO.getName());
+            existingProduct.setDescription(addProductVO.getDescription());
+            existingProduct.setDetail(addProductVO.getDetail());
+            existingProduct.setMainImage(addProductVO.getMainImage());
+            existingProduct.setBasePrice(BigDecimal.valueOf(addProductVO.getBasePrice()));
+            existingProduct.setOriginPrice(BigDecimal.valueOf(addProductVO.getOriginalPrice()));
+            existingProduct.setIsHot(addProductVO.getIsHot());
+            existingProduct.setIsNew(addProductVO.getIsNew());
+            existingProduct.setIsRecommend(addProductVO.getIsRecommend());
+            existingProduct.setStatus(addProductVO.getStatus());
+            existingProduct.setSortOrder(addProductVO.getSort_order());
+            existingProduct.setUpdateTime(LocalDateTime.now());
+            
+            int updateResult = productMapper.update(existingProduct);
+            log.info("商品更新成功，商品ID：{}，更新结果：{}", productId, updateResult);
 
-            // 保存杯型
+            // 删除原有规格
+            LambdaQueryWrapper<ProductSpecPrice> specWrapper = new LambdaQueryWrapper<>();
+            specWrapper.eq(ProductSpecPrice::getProductId, productId);
+            productSpecPriceService.remove(specWrapper);
+            log.info("删除原有规格成功，商品ID：{}", productId);
+
+            // 保存杯型规格
             List<ProductSpecPrice> cupTypeList = addProductVO.getCupTypeList();
             if (!CollectionUtils.isEmpty(cupTypeList)) {
-
                 for (ProductSpecPrice productSpecPrice : cupTypeList) {
-
-                    productSpecPrice.setProductId(product.getId());
+                    productSpecPrice.setProductId(productId);
                     productSpecPrice.setSpecType("cup_type");
                     productSpecPrice.setCreateTime(LocalDateTime.now());
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
-
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
                 log.info("保存杯型规格数量：{}", cupTypeList.size());
             }
-            // 保存小料
+            
+            // 保存口味规格
+            List<ProductSpecPrice> tasteList = addProductVO.getTasteList();
+            if (!CollectionUtils.isEmpty(tasteList)) {
+                for (ProductSpecPrice productSpecPrice : tasteList) {
+                    productSpecPrice.setProductId(productId);
+                    productSpecPrice.setSpecType("taste");
+                    productSpecPrice.setCreateTime(LocalDateTime.now());
+                    productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    productSpecPriceMapper.insert(productSpecPrice);
+                }
+                log.info("保存口味规格数量：{}", tasteList.size());
+            }
+            
+            // 保存温度规格
+            List<ProductSpecPrice> temperatureList = addProductVO.getTemperatureList();
+            if (!CollectionUtils.isEmpty(temperatureList)) {
+                for (ProductSpecPrice productSpecPrice : temperatureList) {
+                    productSpecPrice.setProductId(productId);
+                    productSpecPrice.setSpecType("temperature");
+                    productSpecPrice.setCreateTime(LocalDateTime.now());
+                    productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    productSpecPriceMapper.insert(productSpecPrice);
+                }
+                log.info("保存温度规格数量：{}", temperatureList.size());
+            }
+            
+            // 保存小料规格
             List<ProductSpecPrice> toppingList = addProductVO.getToppingList();
             if (!CollectionUtils.isEmpty(toppingList)) {
                 for (ProductSpecPrice productSpecPrice : toppingList) {
-                    productSpecPrice.setProductId(product.getId());
+                    productSpecPrice.setProductId(productId);
                     productSpecPrice.setSpecType("topping");
                     productSpecPrice.setCreateTime(LocalDateTime.now());
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
@@ -260,10 +302,13 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 }
                 log.info("保存小料规格数量：{}", toppingList.size());
             }
-            return "保存成功";
+            
+            return "更新成功";
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("保存商品失败：", e);
-            throw new BusinessException("保存商品失败：" + e.getMessage());
+            log.error("更新商品失败：", e);
+            throw new BusinessException("更新商品失败：" + e.getMessage());
         }
     }
 
@@ -313,7 +358,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         List<ProductSpecVO> tasteList = tasteSpecs.stream()
                 .map(this::convertToSpecVO)
                 .collect(Collectors.toList());
-        vo.setHumidityList(tasteList);
+        vo.setTasteList(tasteList);
 
         return vo;
     }

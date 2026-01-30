@@ -18,9 +18,17 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/{id}")
-    public HttpResult detail(@PathVariable long id) {
-        GetProductVO productVO = productService.getProductById(id);
-        return HttpResult.ok("查询成功",productVO);
+    public HttpResult detail(@PathVariable(required = false) Long id) {
+        if (id == null) {
+            return HttpResult.error("商品ID不能为空");
+        }
+        try {
+            GetProductVO productVO = productService.getProductById(id);
+            return HttpResult.ok("查询成功",productVO);
+        } catch (Exception e) {
+            log.error("查询商品详情失败：", e);
+            return HttpResult.error("查询商品详情失败：" + e.getMessage());
+        }
     }
 
     /**
@@ -51,9 +59,17 @@ public class ProductController {
     }
 
     @PostMapping("/admin/delete/{id}")
-    public HttpResult deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
-        return HttpResult.ok("商品删除成功");
+    public HttpResult deleteProduct(@PathVariable(required = false) Long id) {
+        if (id == null) {
+            return HttpResult.error("商品ID不能为空");
+        }
+        try {
+            productService.deleteProduct(id);
+            return HttpResult.ok("商品删除成功");
+        } catch (Exception e) {
+            log.error("删除商品失败：", e);
+            return HttpResult.error("删除商品失败：" + e.getMessage());
+        }
     }
 
 }
