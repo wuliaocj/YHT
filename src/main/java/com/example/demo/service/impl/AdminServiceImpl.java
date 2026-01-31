@@ -7,6 +7,7 @@ import cn.hutool.crypto.digest.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class AdminServiceImpl implements AdminService {
@@ -58,11 +59,33 @@ public class AdminServiceImpl implements AdminService {
                 // 如果使用BCrypt加密密码
                 // admin.setPassword(BCrypt.hashpw(admin.getPassword(), BCrypt.gensalt()));
             }
+            admin.setCreateTime(LocalDateTime.now());
+            admin.setUpdateTime(LocalDateTime.now());
             adminMapper.insert(admin);
         } else {
             // 更新
+            admin.setUpdateTime(LocalDateTime.now());
             adminMapper.update(admin);
         }
         return admin;
+    }
+
+    @Override
+    public List<Admin> listAllAdmins() {
+        return adminMapper.selectList(null);
+    }
+
+    @Override
+    public void deleteAdmin(Integer id) {
+        adminMapper.deleteById(id);
+    }
+
+    @Override
+    public void updateAdminStatus(Integer id, Integer status) {
+        Admin admin = new Admin();
+        admin.setId(id);
+        admin.setStatus(status);
+        admin.setUpdateTime(LocalDateTime.now());
+        adminMapper.update(admin);
     }
 }

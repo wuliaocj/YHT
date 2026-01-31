@@ -78,6 +78,24 @@ public class UserServiceImpl implements UserService {
         userMapper.update(user);
         log.info("更新用户状态，userId：{}，status：{}", userId, status);
     }
+
+    @Override
+    public User getById(Integer id) {
+        return userMapper.selectById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public User updateUser(User user) {
+        User existingUser = userMapper.selectById(user.getId());
+        if (existingUser == null) {
+            throw new BusinessException(404, "用户不存在");
+        }
+        user.setUpdateTime(LocalDateTime.now());
+        userMapper.update(user);
+        log.info("更新用户信息，userId：{}", user.getId());
+        return userMapper.selectById(user.getId());
+    }
 }
 
 

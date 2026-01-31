@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.ProductReviewMapper">
+
+    <resultMap id="ProductReviewResultMap" type="com.example.demo.domain.ProductReview">
+        <id column="id" property="id"/>
+        <result column="product_id" property="productId"/>
+        <result column="user_id" property="userId"/>
+        <result column="order_id" property="orderId"/>
+        <result column="rating" property="rating"/>
+        <result column="content" property="content"/>
+        <result column="images" property="images"/>
+        <result column="status" property="status"/>
+        <result column="helpful_count" property="helpfulCount"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <select id="selectByProductId" resultMap="ProductReviewResultMap">
+        select *
+        from product_review
+        where product_id = #{productId}
+          and status = 1
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+    <select id="countByProductId" resultType="java.lang.Integer">
+        select count(*)
+        from product_review
+        where product_id = #{productId}
+          and status = 1
+    </select>
+
+    <select id="getAverageRatingByProductId" resultType="java.lang.Double">
+        select ifnull(avg(rating), 0) as average_rating
+        from product_review
+        where product_id = #{productId}
+          and status = 1
+    </select>
+
+    <select id="selectByUserId" resultMap="ProductReviewResultMap">
+        select *
+        from product_review
+        where user_id = #{userId}
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+    <select id="selectByOrderIdAndProductId" resultMap="ProductReviewResultMap">
+        select *
+        from product_review
+        where order_id = #{orderId}
+          and product_id = #{productId}
+    </select>
+
+</mapper>

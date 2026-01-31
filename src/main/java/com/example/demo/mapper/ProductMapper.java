@@ -25,6 +25,13 @@ public interface ProductMapper extends BaseMapper<Product> {
     int delete(@Param("id") Integer id);
 
     List<Product> selectNewProducts();
+
+    /**
+     * 搜索商品
+     * @param keyword 搜索关键词
+     * @return 搜索结果列表
+     */
+    List<Product> searchProducts(@Param("keyword") String keyword);
 }
 
 

@@ -121,4 +121,54 @@ public class OrderController {
         return HttpResult.ok("更新成功");
     }
 
+    /**
+     * 快速重新下单
+     * @param userId 用户ID
+     * @param oldOrderId 历史订单ID
+     * @return 新订单
+     */
+    @PostMapping("/reorder")
+    public HttpResult reorder(@RequestParam Integer userId, @RequestParam Integer oldOrderId) {
+        try {
+            // 基础参数校验
+            if (userId == null || userId <= 0) {
+                return HttpResult.error("用户ID无效，请传入正整数");
+            }
+            if (oldOrderId == null || oldOrderId <= 0) {
+                return HttpResult.error("历史订单ID无效，请传入正整数");
+            }
+
+            // 调用Service重新下单
+            Order newOrder = orderService.reorder(userId, oldOrderId);
+            log.info("用户{}快速重新下单成功，历史订单ID：{}，新订单ID：{}", userId, oldOrderId, newOrder.getId());
+            return HttpResult.ok("重新下单成功", newOrder);
+        } catch (Exception e) {
+            log.error("快速重新下单失败：", e);
+            return HttpResult.error("快速重新下单失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 验证取餐码
+     * @param takeCode 取餐码
+     * @return 验证结果
+     */
+    @PostMapping("/validate-take-code")
+    public HttpResult validateTakeCode(@RequestParam String takeCode) {
+        try {
+            // 基础参数校验
+            if (takeCode == null || takeCode.isEmpty()) {
+                return HttpResult.error("取餐码不能为空");
+            }
+
+            // 调用Service验证取餐码
+            Order order = orderService.validateTakeCode(takeCode);
+            log.info("取餐码验证成功，takeCode：{}，orderId：{}", takeCode, order.getId());
+            return HttpResult.ok("取餐码验证成功", order);
+        } catch (Exception e) {
+            log.error("取餐码验证失败：", e);
+            return HttpResult.error("取餐码验证失败：" + e.getMessage());
+        }
+    }
+
 }

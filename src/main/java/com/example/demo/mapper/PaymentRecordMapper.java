@@ -19,6 +19,16 @@ public interface PaymentRecordMapper extends BaseMapper<PaymentRecord> {
     PaymentRecord selectByPaymentNo(@Param("paymentNo") String paymentNo);
 
     /**
+     * 根据退款单号查询支付记录
+     */
+    PaymentRecord selectByRefundNo(@Param("refundNo") String refundNo);
+
+    /**
+     * 根据用户ID查询支付记录列表（分页）
+     */
+    java.util.List<PaymentRecord> selectByUserId(@Param("userId") Integer userId, @Param("offset") Integer offset, @Param("limit") Integer limit);
+
+    /**
      * 插入支付记录
      */
     int insert(PaymentRecord paymentRecord);

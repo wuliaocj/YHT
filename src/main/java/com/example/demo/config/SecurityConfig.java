@@ -44,23 +44,23 @@ public class SecurityConfig {
                 // 配置权限
                 .authorizeHttpRequests(auth -> auth
                         // 公开接口
-                        .requestMatchers("/api/user/login", "/api/admin/login").permitAll()
-                        .requestMatchers("/api/payment/callback").permitAll()
-                        .requestMatchers("/api/product/list", "/api/product/detail").permitAll()
-                        .requestMatchers("/api/banner/list").permitAll()
-                        .requestMatchers("/api/category/list").permitAll()
-                        .requestMatchers("/api/order/admin/order/list").permitAll()//零时添加，后续找到方法再修改
-                        .requestMatchers("/upload/**").permitAll() // 允许公开访问上传的文件
-                        .requestMatchers("/error").permitAll()
+                        .antMatchers("/api/user/login", "/api/admin/login").permitAll()
+                        .antMatchers("/api/payment/callback").permitAll()
+                        .antMatchers("/api/product/list", "/api/product/detail").permitAll()
+                        .antMatchers("/api/banner/list").permitAll()
+                        .antMatchers("/api/category/list").permitAll()
+                        .antMatchers("/api/order/admin/order/list").permitAll()//零时添加，后续找到方法再修改
+                        .antMatchers("/upload/**").permitAll() // 允许公开访问上传的文件
+                        .antMatchers("/error").permitAll()
 
                         // 管理员接口（需要ADMIN角色）
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .antMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // 用户接口（需要USER角色）
-                        .requestMatchers("/api/user/**").hasRole("USER")
-                        .requestMatchers("/api/order/**").hasRole("USER")
-                        .requestMatchers("/api/cart/**").hasRole("USER")
-                        .requestMatchers("/api/payment/create").hasRole("USER")
+                        .antMatchers("/api/user/**").hasRole("USER")
+                        .antMatchers("/api/order/**").hasRole("USER")
+                        .antMatchers("/api/cart/**").hasRole("USER")
+                        .antMatchers("/api/payment/create").hasRole("USER")
 
                         // 其他所有请求都需要认证
                         .anyRequest().authenticated()

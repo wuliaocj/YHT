@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mapper.UserPointMapper">
+
+    <resultMap id="UserPointResultMap" type="com.example.demo.domain.UserPoint">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="type" property="type"/>
+        <result column="point" property="point"/>
+        <result column="balance" property="balance"/>
+        <result column="source" property="source"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectById" resultMap="UserPointResultMap">
+        select * from user_point where id = #{id}
+    </select>
+
+    <select id="selectByUserId" resultMap="UserPointResultMap">
+        select * from user_point where user_id = #{userId} order by create_time desc
+    </select>
+
+    <select id="selectUserPointBalance" resultType="java.lang.Integer">
+        select ifnull(sum(
+            case 
+                when type = 1 then point
+                when type = 2 then -point
+                else 0
+            end
+        ), 0) as balance from user_point where user_id = #{userId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        insert into user_point(user_id, type, point, balance, source, remark, create_time)
+        values (#{userId}, #{type}, #{point}, #{balance}, #{source}, #{remark}, #{createTime})
+    </insert>
+
+    <update id="update">
+        update user_point
+        set type = #{type},
+            point = #{point},
+            balance = #{balance},
+            source = #{source},
+            remark = #{remark}
+        where id = #{id}
+    </update>
+
+    <delete id="delete">
+        delete from user_point where id = #{id}
+    </delete>
+
+</mapper>

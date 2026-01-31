@@ -34,6 +34,13 @@ public interface ProductService extends IService<Product> {
     Object updateProduct(AddProductVO addProductVO);
 
     void deleteProduct(Long productId);
+
+    /**
+     * 搜索商品
+     * @param keyword 搜索关键词
+     * @return 搜索结果列表
+     */
+    List<GetProductVO> searchProducts(String keyword);
 }
 
 

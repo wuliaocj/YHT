@@ -58,6 +58,21 @@ public class ProductController {
         return HttpResult.ok("用户商品查询成功",productService.getProductList());
     }
 
+    /**
+     * 搜索商品
+     * @param keyword 搜索关键词
+     * @return 搜索结果
+     */
+    @GetMapping("/user/search")
+    public HttpResult searchProduct(@RequestParam String keyword) {
+        try {
+            return HttpResult.ok("商品搜索成功",productService.searchProducts(keyword));
+        } catch (Exception e) {
+            log.error("搜索商品失败：", e);
+            return HttpResult.error("搜索商品失败：" + e.getMessage());
+        }
+    }
+
     @PostMapping("/admin/delete/{id}")
     public HttpResult deleteProduct(@PathVariable(required = false) Long id) {
         if (id == null) {

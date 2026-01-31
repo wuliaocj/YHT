@@ -27,4 +27,5 @@ public class PaymentRecord {
     private BigDecimal refundAmount; // 退款金额
     private LocalDateTime refundTime;
     private String refundReason; // 退款原因
+    private String refundNo; // 退款单号
 }

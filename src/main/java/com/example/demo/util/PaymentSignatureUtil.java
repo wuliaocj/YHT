@@ -65,17 +65,68 @@ public class PaymentSignatureUtil {
                 return false;
             }
 
+            if (alipayPublicKey == null || alipayPublicKey.isEmpty()) {
+                log.error("支付宝公钥未配置");
+                return false;
+            }
+
             // 构建待签名字符串
             String signString = buildAlipaySignString(callbackData);
             
-            // 这里应该使用支付宝公钥验证签名
-            // 由于没有引入支付宝SDK，这里简化处理
-            // 实际生产环境需要调用支付宝SDK的验证方法
-            log.warn("支付宝签名验证需要引入支付宝SDK，当前为简化实现");
-            return true;
+            // 验证签名
+            boolean result = verifySignature(signString, sign, alipayPublicKey, signType);
+            if (!result) {
+                log.error("支付宝签名验证失败");
+            }
+            
+            return result;
             
         } catch (Exception e) {
             log.error("支付宝签名验证异常", e);
+            return false;
+        }
+    }
+
+    /**
+     * 验证签名
+     * @param data 待签名数据
+     * @param sign 签名
+     * @param publicKey 公钥
+     * @param signType 签名类型
+     * @return true-签名验证通过，false-签名验证失败
+     */
+    private boolean verifySignature(String data, String sign, String publicKey, String signType) {
+        try {
+            // 处理公钥格式
+            publicKey = publicKey.replace("-----BEGIN PUBLIC KEY-----", "")
+                    .replace("-----END PUBLIC KEY-----", "")
+                    .replaceAll("\\s+", "");
+
+            // 解码Base64签名
+            byte[] signBytes = java.util.Base64.getDecoder().decode(sign);
+
+            // 获取签名算法
+            java.security.Signature signature;
+            if ("RSA2".equals(signType)) {
+                signature = java.security.Signature.getInstance("SHA256withRSA");
+            } else {
+                signature = java.security.Signature.getInstance("SHA1withRSA");
+            }
+
+            // 加载公钥
+            java.security.KeyFactory keyFactory = java.security.KeyFactory.getInstance("RSA");
+            java.security.spec.X509EncodedKeySpec keySpec = new java.security.spec.X509EncodedKeySpec(
+                    java.util.Base64.getDecoder().decode(publicKey)
+            );
+            java.security.PublicKey pubKey = keyFactory.generatePublic(keySpec);
+
+            // 初始化签名并验证
+            signature.initVerify(pubKey);
+            signature.update(data.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return signature.verify(signBytes);
+
+        } catch (Exception e) {
+            log.error("签名验证异常", e);
             return false;
         }
     }

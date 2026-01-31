@@ -25,6 +25,21 @@ public interface OrderService {
     List<Order> listAllOrders();
 
     void updateOrderStatus(Integer orderId, Integer status, String adminRemark);
+
+    /**
+     * 快速重新下单
+     * @param userId 用户ID
+     * @param oldOrderId 历史订单ID
+     * @return 新创建的订单
+     */
+    Order reorder(Integer userId, Integer oldOrderId);
+    
+    /**
+     * 验证取餐码
+     * @param takeCode 取餐码
+     * @return 订单信息
+     */
+    Order validateTakeCode(String takeCode);
 }
 
 

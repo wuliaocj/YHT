@@ -21,6 +21,8 @@ public interface OrderMapper extends BaseMapper<Order> {
     int update(Order order);
 
     int insert(Order order);
+    
+    Order selectByTakeCode(@Param("takeCode") String takeCode);
 }
 
 

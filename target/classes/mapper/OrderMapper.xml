@@ -50,11 +50,11 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into `order`(order_no, user_id, total_amount, discount_amount, delivery_fee, actual_amount,
                             payment_method, payment_status, payment_time, transaction_id,
-                            order_status, order_type, take_code, estimated_time,
+                            order_status, order_type, coupon_id, take_code, estimated_time,
                             complete_time, cancel_reason, cancel_time, user_remark, admin_remark)
         values (#{orderNo}, #{userId}, #{totalAmount}, #{discountAmount}, #{deliveryFee}, #{actualAmount},
                 #{paymentMethod}, #{paymentStatus}, #{paymentTime}, #{transactionId},
-                #{orderStatus}, #{orderType}, #{takeCode}, #{estimatedTime},
+                #{orderStatus}, #{orderType}, #{couponId}, #{takeCode}, #{estimatedTime},
                 #{completeTime}, #{cancelReason}, #{cancelTime}, #{userRemark}, #{adminRemark})
     </insert>
 
@@ -70,6 +70,7 @@
             transaction_id  = #{transactionId},
             order_status    = #{orderStatus},
             order_type      = #{orderType},
+            coupon_id       = #{couponId},
             take_code       = #{takeCode},
             estimated_time  = #{estimatedTime},
             complete_time   = #{completeTime},
@@ -79,6 +80,10 @@
             admin_remark    = #{adminRemark}
         where id = #{id}
     </update>
+
+    <select id="selectByTakeCode" resultMap="OrderResultMap">
+        select * from `order` where take_code = #{takeCode}
+    </select>
 </mapper>
 
 

@@ -135,6 +135,140 @@ public class PaymentController {
     }
 
     /**
+     * 申请退款
+     * @param orderNo 订单号
+     * @param refundAmount 退款金额
+     * @param refundReason 退款原因
+     * @return 退款结果
+     */
+    @PostMapping("/refund/apply")
+    public HttpResult applyRefund(@RequestParam String orderNo, @RequestParam java.math.BigDecimal refundAmount, @RequestParam String refundReason) {
+        // 1. 获取当前用户ID
+        Integer userId = getCurrentUserId();
+        if (userId == null) {
+            return HttpResult.error("用户未登录");
+        }
+
+        // 2. 参数校验
+        if (orderNo == null || orderNo.trim().isEmpty()) {
+            return HttpResult.error("订单号不能为空");
+        }
+        if (refundAmount == null || refundAmount.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            return HttpResult.error("退款金额必须大于0");
+        }
+        if (refundReason == null || refundReason.trim().isEmpty()) {
+            return HttpResult.error("退款原因不能为空");
+        }
+
+        try {
+            // 3. 申请退款
+            java.util.Map<String, Object> refundResult = paymentService.applyRefund(orderNo, userId, refundAmount, refundReason);
+            log.info("用户{}申请退款成功，orderNo：{}", userId, orderNo);
+            return HttpResult.ok(refundResult);
+        } catch (com.example.demo.exception.BusinessException e) {
+            log.warn("申请退款失败：{}", e.getMessage());
+            return HttpResult.error(e.getMessage());
+        } catch (Exception e) {
+            log.error("申请退款异常：", e);
+            return HttpResult.error("申请退款失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 查询退款状态
+     * @param refundNo 退款单号
+     * @return 退款状态信息
+     */
+    @GetMapping("/refund/status/{refundNo}")
+    public HttpResult queryRefundStatus(@PathVariable String refundNo) {
+        // 1. 获取当前用户ID
+        Integer userId = getCurrentUserId();
+        if (userId == null) {
+            return HttpResult.error("用户未登录");
+        }
+
+        // 2. 参数校验
+        if (refundNo == null || refundNo.trim().isEmpty()) {
+            return HttpResult.error("退款单号不能为空");
+        }
+
+        try {
+            // 3. 查询退款状态
+            java.util.Map<String, Object> refundStatus = paymentService.queryRefundStatus(refundNo, userId);
+            return HttpResult.ok(refundStatus);
+        } catch (com.example.demo.exception.BusinessException e) {
+            log.warn("查询退款状态失败：{}", e.getMessage());
+            return HttpResult.error(e.getMessage());
+        } catch (Exception e) {
+            log.error("查询退款状态异常：", e);
+            return HttpResult.error("查询退款状态失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 查询用户支付记录列表
+     * @param page 页码
+     * @param pageSize 每页大小
+     * @return 支付记录列表
+     */
+    @GetMapping("/records")
+    public HttpResult getPaymentRecords(@RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "10") Integer pageSize) {
+        // 1. 获取当前用户ID
+        Integer userId = getCurrentUserId();
+        if (userId == null) {
+            return HttpResult.error("用户未登录");
+        }
+
+        // 2. 参数校验
+        if (page < 1) {
+            page = 1;
+        }
+        if (pageSize < 1 || pageSize > 100) {
+            pageSize = 10;
+        }
+
+        try {
+            // 3. 查询支付记录
+            java.util.List<com.example.demo.domain.PaymentRecord> paymentRecords = paymentService.getPaymentRecordsByUserId(userId, page, pageSize);
+            return HttpResult.ok(paymentRecords);
+        } catch (Exception e) {
+            log.error("查询支付记录异常：", e);
+            return HttpResult.error("查询支付记录失败，请稍后重试");
+        }
+    }
+
+    /**
+     * 根据支付单号查询支付记录详情
+     * @param paymentNo 支付单号
+     * @return 支付记录详情
+     */
+    @GetMapping("/detail/{paymentNo}")
+    public HttpResult getPaymentDetail(@PathVariable String paymentNo) {
+        // 1. 获取当前用户ID
+        Integer userId = getCurrentUserId();
+        if (userId == null) {
+            return HttpResult.error("用户未登录");
+        }
+
+        // 2. 参数校验
+        if (paymentNo == null || paymentNo.trim().isEmpty()) {
+            return HttpResult.error("支付单号不能为空");
+        }
+
+        try {
+            // 3. 查询支付记录
+            com.example.demo.domain.PaymentRecord paymentRecord = paymentService.getPaymentByPaymentNo(paymentNo, userId);
+            return HttpResult.ok(paymentRecord);
+        } catch (com.example.demo.exception.BusinessException e) {
+            log.warn("查询支付记录失败：{}", e.getMessage());
+            return HttpResult.error(e.getMessage());
+        } catch (Exception e) {
+            log.error("查询支付记录异常：", e);
+            return HttpResult.error("查询支付记录失败，请稍后重试");
+        }
+    }
+
+    /**
      * 获取当前登录用户ID
      */
     private Integer getCurrentUserId() {

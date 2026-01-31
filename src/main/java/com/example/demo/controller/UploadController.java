@@ -2,7 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.domain.Result;
 import com.example.demo.http.HttpResult;
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;

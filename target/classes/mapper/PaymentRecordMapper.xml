@@ -19,6 +19,7 @@
         <result column="refund_amount" property="refundAmount"/>
         <result column="refund_time" property="refundTime"/>
         <result column="refund_reason" property="refundReason"/>
+        <result column="refund_no" property="refundNo"/>
     </resultMap>
 
     <select id="selectByOrderNo" resultMap="PaymentRecordResultMap">
@@ -29,13 +30,21 @@
         select * from payment_record where payment_no = #{paymentNo}
     </select>
 
+    <select id="selectByRefundNo" resultMap="PaymentRecordResultMap">
+        select * from payment_record where refund_no = #{refundNo}
+    </select>
+
+    <select id="selectByUserId" resultMap="PaymentRecordResultMap">
+        select * from payment_record where user_id = #{userId} order by create_time desc limit #{offset}, #{limit}
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into payment_record(order_no, payment_no, user_id, amount, payment_method, payment_status,
                                    transaction_id, create_time, pay_time, callback_time, callback_content,
-                                   refund_amount, refund_time, refund_reason)
+                                   refund_amount, refund_time, refund_reason, refund_no)
         values (#{orderNo}, #{paymentNo}, #{userId}, #{amount}, #{paymentMethod}, #{paymentStatus},
                 #{transactionId}, #{createTime}, #{payTime}, #{callbackTime}, #{callbackContent},
-                #{refundAmount}, #{refundTime}, #{refundReason})
+                #{refundAmount}, #{refundTime}, #{refundReason}, #{refundNo})
     </insert>
 
     <update id="update">
@@ -52,7 +61,8 @@
             callback_content = #{callbackContent},
             refund_amount    = #{refundAmount},
             refund_time      = #{refundTime},
-            refund_reason    = #{refundReason}
+            refund_reason    = #{refundReason},
+            refund_no        = #{refundNo}
         where id = #{id}
     </update>
 </mapper>

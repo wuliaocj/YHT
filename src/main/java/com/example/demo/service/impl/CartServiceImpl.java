@@ -13,7 +13,7 @@ import com.example.demo.service.ProductService;
 import com.example.demo.service.ProductSpecPriceService;
 import com.example.demo.util.JsonUtil;
 import com.example.demo.vo.AddCartVO;
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 
 import com.example.demo.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;

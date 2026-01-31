@@ -394,6 +394,45 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     /**
+     * 搜索商品
+     */
+    @Override
+    public List<GetProductVO> searchProducts(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 搜索商品
+        List<Product> products = productMapper.searchProducts(keyword);
+        if (CollectionUtils.isEmpty(products)) {
+            return new ArrayList<>();
+        }
+
+        // 批量获取所有商品ID
+        List<Long> productIds = products.stream()
+                .map(Product::getId)
+                .collect(Collectors.toList());
+
+        // 批量查询所有规格（一次性查询，避免N+1）
+        LambdaQueryWrapper<ProductSpecPrice> specWrapper = new LambdaQueryWrapper<>();
+        specWrapper.in(ProductSpecPrice::getProductId, productIds)
+                .eq(ProductSpecPrice::getStatus, 1);
+        List<ProductSpecPrice> allSpecs = productSpecPriceService.list(specWrapper);
+
+        // 按商品ID和规格类型分组
+        Map<Long, Map<String, List<ProductSpecPrice>>> specsByProduct = allSpecs.stream()
+                .collect(groupingBy(
+                        ProductSpecPrice::getProductId,
+                        groupingBy(ProductSpecPrice::getSpecType)
+                ));
+
+        // 转换为VO列表
+        return products.stream()
+                .map(product -> buildProductVO(product, specsByProduct.getOrDefault(product.getId(), Map.of())))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 转换规格为VO
      */
     private ProductSpecVO convertToSpecVO(ProductSpecPrice spec) {

@@ -37,6 +37,30 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${wx.pay.api-key:}")
     private String wxPayApiKey;
 
+    @Value("${wx.pay.appid:}")
+    private String wxPayAppId;
+
+    @Value("${wx.pay.mchid:}")
+    private String wxPayMchId;
+
+    @Value("${wx.pay.notify-url:}")
+    private String wxPayNotifyUrl;
+
+    @Value("${alipay.app-id:}")
+    private String alipayAppId;
+
+    @Value("${alipay.public-key:}")
+    private String alipayPublicKey;
+
+    @Value("${alipay.private-key:}")
+    private String alipayPrivateKey;
+
+    @Value("${alipay.notify-url:}")
+    private String alipayNotifyUrl;
+
+    @Value("${alipay.return-url:}")
+    private String alipayReturnUrl;
+
     /**
      * 创建支付单（生成支付参数）
      * 注意：这里返回模拟的支付参数，实际生产环境需要调用微信/支付宝SDK
@@ -202,6 +226,138 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     /**
+     * 申请退款
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Map<String, Object> applyRefund(String orderNo, Integer userId, java.math.BigDecimal refundAmount, String refundReason) {
+        // 1. 校验订单
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null) {
+            throw new com.example.demo.exception.BusinessException("订单不存在");
+        }
+        if (!userId.equals(order.getUserId())) {
+            throw new com.example.demo.exception.BusinessException("无权操作该订单");
+        }
+
+        // 2. 校验支付记录
+        PaymentRecord paymentRecord = paymentRecordMapper.selectByOrderNo(orderNo);
+        if (paymentRecord == null) {
+            throw new com.example.demo.exception.BusinessException("支付记录不存在");
+        }
+        if (!PaymentStatusEnum.PAID.getCode().equals(paymentRecord.getPaymentStatus())) {
+            throw new com.example.demo.exception.BusinessException("订单未支付或已退款，无法申请退款");
+        }
+
+        // 3. 校验退款金额
+        if (refundAmount == null || refundAmount.compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new com.example.demo.exception.BusinessException("退款金额必须大于0");
+        }
+        if (refundAmount.compareTo(paymentRecord.getAmount()) > 0) {
+            throw new com.example.demo.exception.BusinessException("退款金额不能超过支付金额");
+        }
+
+        // 4. 生成退款单号
+        String refundNo = generateRefundNo();
+
+        // 5. 更新支付记录状态为已退款
+        paymentRecord.setPaymentStatus(PaymentStatusEnum.REFUNDED.getCode());
+        paymentRecord.setRefundNo(refundNo);
+        paymentRecord.setRefundAmount(refundAmount);
+        paymentRecord.setRefundReason(refundReason);
+        paymentRecord.setRefundTime(LocalDateTime.now());
+        paymentRecordMapper.update(paymentRecord);
+
+        // 6. 更新订单状态为已退款
+        order.setPaymentStatus(PaymentStatusEnum.REFUNDED.getCode());
+        order.setOrderStatus(com.example.demo.config.OrderStatusEnum.CANCELLED.getCode());
+        // order.setRefundNo(refundNo); // Order类中无setRefundNo方法，已注释
+        orderMapper.update(order);
+
+        // 7. 构建退款结果
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("refundNo", refundNo);
+        result.put("orderNo", orderNo);
+        result.put("refundAmount", refundAmount);
+        result.put("refundTime", paymentRecord.getRefundTime());
+        result.put("status", "SUCCESS");
+
+        log.info("申请退款成功，orderNo：{}，refundNo：{}，refundAmount：{}", orderNo, refundNo, refundAmount);
+        return result;
+    }
+
+    /**
+     * 查询退款状态
+     */
+    @Override
+    public Map<String, Object> queryRefundStatus(String refundNo, Integer userId) {
+        // 1. 查询支付记录
+        PaymentRecord paymentRecord = paymentRecordMapper.selectByRefundNo(refundNo);
+        if (paymentRecord == null) {
+            throw new com.example.demo.exception.BusinessException("退款记录不存在");
+        }
+
+        // 2. 权限校验
+        if (!userId.equals(paymentRecord.getUserId())) {
+            throw new com.example.demo.exception.BusinessException("无权查询该退款记录");
+        }
+
+        // 3. 构建退款状态信息
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("refundNo", refundNo);
+        result.put("orderNo", paymentRecord.getOrderNo());
+        result.put("refundAmount", paymentRecord.getRefundAmount());
+        result.put("refundReason", paymentRecord.getRefundReason());
+        result.put("refundTime", paymentRecord.getRefundTime());
+        result.put("status", PaymentStatusEnum.REFUNDED.getCode().equals(paymentRecord.getPaymentStatus()) ? "SUCCESS" : "PENDING");
+
+        return result;
+    }
+
+    /**
+     * 查询用户支付记录列表
+     */
+    @Override
+    public java.util.List<PaymentRecord> getPaymentRecordsByUserId(Integer userId, Integer page, Integer pageSize) {
+        if (userId == null) {
+            throw new com.example.demo.exception.BusinessException("用户ID不能为空");
+        }
+
+        // 计算分页参数
+        Integer offset = (page - 1) * pageSize;
+        return paymentRecordMapper.selectByUserId(userId, offset, pageSize);
+    }
+
+    /**
+     * 根据支付单号查询支付记录
+     */
+    @Override
+    public PaymentRecord getPaymentByPaymentNo(String paymentNo, Integer userId) {
+        if (paymentNo == null || paymentNo.trim().isEmpty()) {
+            throw new com.example.demo.exception.BusinessException("支付单号不能为空");
+        }
+
+        PaymentRecord paymentRecord = paymentRecordMapper.selectByPaymentNo(paymentNo);
+        if (paymentRecord == null) {
+            throw new com.example.demo.exception.BusinessException("支付记录不存在");
+        }
+
+        // 权限校验
+        if (!userId.equals(paymentRecord.getUserId())) {
+            throw new com.example.demo.exception.BusinessException("无权查询该支付记录");
+        }
+
+        return paymentRecord;
+    }
+
+    /**
+     * 生成退款单号
+     */
+    private String generateRefundNo() {
+        return "REFUND_" + System.currentTimeMillis() + (int)(Math.random() * 1000);
+    }
+
+    /**
      * 生成支付单号（使用雪花算法）
      */
     private String generatePaymentNo() {
@@ -220,12 +376,21 @@ public class PaymentServiceImpl implements PaymentService {
 
         // 模拟微信支付参数（实际需要调用微信SDK）
         if (paymentRecord.getPaymentMethod() == 1) { // 微信支付
-            params.put("appId", "wx70e7b0411521d834");
+            params.put("appId", wxPayAppId != null && !wxPayAppId.isEmpty() ? wxPayAppId : "wx70e7b0411521d834");
             params.put("timeStamp", String.valueOf(System.currentTimeMillis() / 1000));
             params.put("nonceStr", "mock_nonce_" + System.currentTimeMillis());
             params.put("package", "prepay_id=mock_prepay_" + paymentRecord.getPaymentNo());
             params.put("signType", "RSA");
             params.put("paySign", "mock_sign_" + paymentRecord.getPaymentNo());
+            params.put("notifyUrl", wxPayNotifyUrl);
+        } else if (paymentRecord.getPaymentMethod() == 2) { // 支付宝支付
+            params.put("appId", alipayAppId != null && !alipayAppId.isEmpty() ? alipayAppId : "your_alipay_app_id");
+            params.put("outTradeNo", paymentRecord.getPaymentNo());
+            params.put("subject", "益禾堂奶茶订单" + paymentRecord.getOrderNo());
+            params.put("totalAmount", paymentRecord.getAmount().toString());
+            params.put("productCode", "FAST_INSTANT_TRADE_PAY");
+            params.put("returnUrl", alipayReturnUrl);
+            params.put("notifyUrl", alipayNotifyUrl);
         }
 
         return params;
@@ -249,7 +414,10 @@ public class PaymentServiceImpl implements PaymentService {
                 return signatureUtil.verifyWxPaySignature(callbackData, wxPayApiKey);
             } else if ("alipay".equals(payType) || callbackData.containsKey("app_id")) {
                 // 支付宝签名验证
-                String alipayPublicKey = ""; // 实际应从配置中读取
+                if (alipayPublicKey == null || alipayPublicKey.isEmpty()) {
+                    log.error("支付宝公钥未配置，无法验证签名");
+                    return false;
+                }
                 return signatureUtil.verifyAlipaySignature(callbackData, alipayPublicKey);
             } else {
                 log.warn("未知的支付类型，跳过签名验证：{}", payType);

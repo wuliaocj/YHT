@@ -57,6 +57,19 @@
         order by sales_count desc
     </select>
 
+    <select id="searchProducts" resultMap="ProductResultMap">
+        select *
+        from product
+        where status = 1
+          and (
+              name like concat('%', #{keyword}, '%')
+              or en_name like concat('%', #{keyword}, '%')
+              or description like concat('%', #{keyword}, '%')
+              or detail like concat('%', #{keyword}, '%')
+          )
+        order by sales_count desc, sort_order asc, id asc
+    </select>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into product(category_id, name, en_name, description, detail, main_image, images,
                             base_price, origin_price, inventory, sales_count,

@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.domain.PaymentRecord;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,4 +38,39 @@ public interface PaymentService {
      * @return 处理结果
      */
     boolean mockPaymentSuccess(String orderNo);
+
+    /**
+     * 申请退款
+     * @param orderNo 订单号
+     * @param userId 用户ID
+     * @param refundAmount 退款金额
+     * @param refundReason 退款原因
+     * @return 退款结果
+     */
+    Map<String, Object> applyRefund(String orderNo, Integer userId, java.math.BigDecimal refundAmount, String refundReason);
+
+    /**
+     * 查询退款状态
+     * @param refundNo 退款单号
+     * @param userId 用户ID
+     * @return 退款状态信息
+     */
+    Map<String, Object> queryRefundStatus(String refundNo, Integer userId);
+
+    /**
+     * 查询用户支付记录列表
+     * @param userId 用户ID
+     * @param page 页码
+     * @param pageSize 每页大小
+     * @return 支付记录列表
+     */
+    List<PaymentRecord> getPaymentRecordsByUserId(Integer userId, Integer page, Integer pageSize);
+
+    /**
+     * 根据支付单号查询支付记录
+     * @param paymentNo 支付单号
+     * @param userId 用户ID
+     * @return 支付记录
+     */
+    PaymentRecord getPaymentByPaymentNo(String paymentNo, Integer userId);
 }

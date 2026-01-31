@@ -22,6 +22,10 @@ public interface UserService {
     List<User> listAllUsers();
 
     void updateUserStatus(Integer userId, Integer status);
+
+    User getById(Integer id);
+
+    User updateUser(User user);
 }
 
 
