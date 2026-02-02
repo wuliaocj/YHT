@@ -40,28 +40,28 @@ public class AddCartVO {
     private Integer quantity;
 
     /**
-     * 杯型规格ID（必填）
+     * 杯型规格ID列表（必填）
      * 奶茶核心规格，如大杯/中杯/小杯，关联规格表
      */
     @NotNull(message = "杯型规格不能为空")
-    @Schema(description = "杯型规格ID", example = "20")
-    private Long cupSpecId;
+    @Schema(description = "杯型规格ID列表", example = "[20,21]")
+    private List<Long> cupSpecIds;
 
     /**
-     * 口味规格ID（必填）
+     * 口味规格ID列表（必填）
      * 如少糖/正常糖，默认全糖
      */
     @NotNull(message = "口味规格不能为空")
-    @Schema(description = "口味规格ID", example = "[23,24]")
-    private Long tasteSpecId;
+    @Schema(description = "口味规格ID列表", example = "[23,24]")
+    private List<Long> tasteSpecIds;
 
     /**
-     * 温度规格ID（必填）
+     * 温度规格ID列表（必填）
      * 如去冰/常温，默认常温
      */
     @NotNull(message = "温度规格不能为空")
-    @Schema(description = "温度规格ID", example = "[23,24]")
-    private Long temperatureSpecId;
+    @Schema(description = "温度规格ID列表", example = "[25,26]")
+    private List<Long> temperatureSpecIds;
 
     /**
      * 小料规格ID列表（可选）

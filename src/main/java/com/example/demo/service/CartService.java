@@ -18,6 +18,7 @@ public interface CartService {
     void removeCartItem(Integer cartId);
 
     void clearUserCart(Integer userId);
+    
 }
 
 

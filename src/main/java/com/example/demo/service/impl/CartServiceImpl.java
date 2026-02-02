@@ -64,9 +64,9 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
         Integer userId = addCartVO.getUserId();
         Integer productId = addCartVO.getProductId();
         Integer quantity = addCartVO.getQuantity();
-        Long cupSpecId = addCartVO.getCupSpecId();
-        Long tasteSpecId = addCartVO.getTasteSpecId();
-        Long temperatureSpecId = addCartVO.getTemperatureSpecId();
+        List<Long> cupSpecIds = addCartVO.getCupSpecIds();
+        List<Long> tasteSpecIds = addCartVO.getTasteSpecIds();
+        List<Long> temperatureSpecIds = addCartVO.getTemperatureSpecIds();
         List<Long> toppingSpecIds = addCartVO.getToppingSpecIds();
 
         if (quantity < 1) {
@@ -79,32 +79,64 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
             throw new BusinessException("商品不存在或已下架");
         }
 
-        // 3. 查询并校验杯型规格（核心：定义cupSpecName）
-        ProductSpecPrice cupSpec = productSpecPriceService.getById(cupSpecId);
-        if (cupSpec == null || !"cup_type".equals(cupSpec.getSpecType()) || cupSpec.getStatus() == 0) {
-            throw new BusinessException("杯型规格无效或已下架");
+        // 3. 查询并校验杯型规格
+        String cupSpecNames = "";
+        List<ProductSpecPrice> cupSpecList = List.of();
+        if (!CollectionUtils.isEmpty(cupSpecIds)) {
+            cupSpecList = productSpecPriceService.listByIds(cupSpecIds);
+            // 过滤有效杯型规格
+            cupSpecList = cupSpecList.stream()
+                    .filter(s -> "cup_type".equals(s.getSpecType()) && s.getStatus() == 1)
+                    .collect(Collectors.toList());
+            // 校验是否有无效杯型
+            if (cupSpecList.size() != cupSpecIds.size()) {
+                throw new BusinessException("部分杯型规格无效或已下架");
+            }
+            // 拼接杯型名称
+            cupSpecNames = cupSpecList.stream()
+                    .map(ProductSpecPrice::getSpecName)
+                    .collect(Collectors.joining("+"));
         }
-        String cupSpecName = cupSpec.getSpecName();
 
         // 4. 查询并校验口味规格
-        String tasteSpecName = "";
-        if (tasteSpecId != null) {
-            ProductSpecPrice tasteSpec = productSpecPriceService.getById(tasteSpecId);
-            if (tasteSpec == null || !"taste".equals(tasteSpec.getSpecType()) || tasteSpec.getStatus() == 0) {
-                throw new BusinessException("口味规格无效或已下架");
+        String tasteSpecNames = "";
+        List<ProductSpecPrice> tasteSpecList = List.of();
+        if (!CollectionUtils.isEmpty(tasteSpecIds)) {
+            tasteSpecList = productSpecPriceService.listByIds(tasteSpecIds);
+            // 过滤有效口味规格
+            tasteSpecList = tasteSpecList.stream()
+                    .filter(s -> "taste".equals(s.getSpecType()) && s.getStatus() == 1)
+                    .collect(Collectors.toList());
+            // 校验是否有无效口味
+            if (tasteSpecList.size() != tasteSpecIds.size()) {
+                throw new BusinessException("部分口味规格无效或已下架");
             }
-            tasteSpecName = tasteSpec.getSpecName();
+            // 拼接口味名称
+            tasteSpecNames = tasteSpecList.stream()
+                    .map(ProductSpecPrice::getSpecName)
+                    .collect(Collectors.joining("+"));
         }
-        // 4.5 查询并校验温度规格
-        String temperatureSpecName = "";
-        if (temperatureSpecId != null) {
-            ProductSpecPrice temperatureSpec = productSpecPriceService.getById(temperatureSpecId);
-            if (temperatureSpec == null || !"temperature".equals(temperatureSpec.getSpecType()) || temperatureSpec.getStatus() == 0) {
-                throw new BusinessException("温度规格无效或已下架");
+
+        // 5. 查询并校验温度规格
+        String temperatureSpecNames = "";
+        List<ProductSpecPrice> temperatureSpecList = List.of();
+        if (!CollectionUtils.isEmpty(temperatureSpecIds)) {
+            temperatureSpecList = productSpecPriceService.listByIds(temperatureSpecIds);
+            // 过滤有效温度规格
+            temperatureSpecList = temperatureSpecList.stream()
+                    .filter(s -> "temperature".equals(s.getSpecType()) && s.getStatus() == 1)
+                    .collect(Collectors.toList());
+            // 校验是否有无效温度
+            if (temperatureSpecList.size() != temperatureSpecIds.size()) {
+                throw new BusinessException("部分温度规格无效或已下架");
             }
-            temperatureSpecName = temperatureSpec.getSpecName();
+            // 拼接温度名称
+            temperatureSpecNames = temperatureSpecList.stream()
+                    .map(ProductSpecPrice::getSpecName)
+                    .collect(Collectors.joining("+"));
         }
-        // 5. 查询并校验小料规格
+
+        // 6. 查询并校验小料规格
         String toppingSpecNames = "";
         List<ProductSpecPrice> toppingSpecList = List.of();
         if (!CollectionUtils.isEmpty(toppingSpecIds)) {
@@ -123,40 +155,56 @@ public class CartServiceImpl extends ServiceImpl<CartMapper, Cart> implements Ca
                     .collect(Collectors.joining("+"));
         }
 
-        // 6. 构建规格相关字段（核心：基于你的JsonUtil优化）
-        // 6.1 构建specMap（使用LinkedHashMap+统一空值处理，配合JsonUtil的排序）
-        Map<String, Object> specMap = new LinkedHashMap<>(); // 先按插入顺序，最终JsonUtil会按key排序
-        // 统一空值处理：避免tasteSpecId=null序列化出不同结果
-        specMap.put("tasteSpecIds", tasteSpecId); // JsonUtil已配置Include.ALWAYS，null会正常序列化
-        specMap.put("toppingSpecIds", toppingSpecIds == null ? new ArrayList<>() : toppingSpecIds); // 杜绝null，统一为空列表
-        specMap.put("cupSpecId", cupSpecId);
-        specMap.put("temperatureSpecId", temperatureSpecId);
+        // 7. 构建规格相关字段
+        Map<String, Object> specMap = new LinkedHashMap<>();
+        specMap.put("cupSpecIds", cupSpecIds == null ? new ArrayList<>() : cupSpecIds);
+        specMap.put("tasteSpecIds", tasteSpecIds == null ? new ArrayList<>() : tasteSpecIds);
+        specMap.put("temperatureSpecIds", temperatureSpecIds == null ? new ArrayList<>() : temperatureSpecIds);
+        specMap.put("toppingSpecIds", toppingSpecIds == null ? new ArrayList<>() : toppingSpecIds);
 
-
-
-        // 6.2 用你的JsonUtil序列化（已配置标准化）
+        // 8. 序列化规格信息
         String specIds = JsonUtil.toJson(specMap);
         log.debug("最终生成的specIds：{}", specIds);
 
-        // 6.3 构建selectedSpecs（原有逻辑不变）
-        StringBuilder selectedSpecsBuilder = new StringBuilder(cupSpecName);
-        if (!tasteSpecName.isEmpty()) {
-            selectedSpecsBuilder.append("/").append(tasteSpecName);
+        // 9. 构建selectedSpecs
+        StringBuilder selectedSpecsBuilder = new StringBuilder();
+        if (!cupSpecNames.isEmpty()) {
+            selectedSpecsBuilder.append(cupSpecNames);
+        }
+        if (!tasteSpecNames.isEmpty()) {
+            if (selectedSpecsBuilder.length() > 0) {
+                selectedSpecsBuilder.append("/");
+            }
+            selectedSpecsBuilder.append(tasteSpecNames);
+        }
+        if (!temperatureSpecNames.isEmpty()) {
+            if (selectedSpecsBuilder.length() > 0) {
+                selectedSpecsBuilder.append("/");
+            }
+            selectedSpecsBuilder.append(temperatureSpecNames);
         }
         if (!toppingSpecNames.isEmpty()) {
-            selectedSpecsBuilder.append("/").append(toppingSpecNames);
-        }
-        if (!temperatureSpecName.isEmpty()) {
-            selectedSpecsBuilder.append("/").append(temperatureSpecName);
+            if (selectedSpecsBuilder.length() > 0) {
+                selectedSpecsBuilder.append("/");
+            }
+            selectedSpecsBuilder.append(toppingSpecNames);
         }
         String selectedSpecs = selectedSpecsBuilder.toString();
 
-        // 7. 计算商品单价（基础价+杯型加价+小料加价）
-        BigDecimal cupAdd = cupSpec.getPriceAdd();
+        // 10. 计算商品单价（基础价+杯型加价+口味加价+温度加价+小料加价）
+        BigDecimal cupAdd = cupSpecList.stream()
+                .map(ProductSpecPrice::getPriceAdd)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal tasteAdd = tasteSpecList.stream()
+                .map(ProductSpecPrice::getPriceAdd)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal temperatureAdd = temperatureSpecList.stream()
+                .map(ProductSpecPrice::getPriceAdd)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal toppingAdd = toppingSpecList.stream()
                 .map(ProductSpecPrice::getPriceAdd)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal unitPrice = product.getBasePrice().add(cupAdd).add(toppingAdd);
+        BigDecimal unitPrice = product.getBasePrice().add(cupAdd).add(tasteAdd).add(temperatureAdd).add(toppingAdd);
 
         // 8. 检查是否存在同商品+同规格的购物车记录
         LambdaQueryWrapper<Cart> wrapper = new LambdaQueryWrapper<>();

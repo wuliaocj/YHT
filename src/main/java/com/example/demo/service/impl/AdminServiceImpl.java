@@ -3,7 +3,7 @@ package com.example.demo.service.impl;
 import com.example.demo.domain.Admin;
 import com.example.demo.mapper.AdminMapper;
 import com.example.demo.service.AdminService;
-import cn.hutool.crypto.digest.BCrypt;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

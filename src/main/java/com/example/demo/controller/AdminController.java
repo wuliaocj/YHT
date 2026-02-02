@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import com.example.demo.domain.Admin;
-import com.example.demo.domain.OperationLog;
 import com.example.demo.domain.Permission;
 import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
