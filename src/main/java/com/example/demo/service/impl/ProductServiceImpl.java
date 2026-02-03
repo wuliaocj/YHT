@@ -8,6 +8,7 @@ import com.example.demo.domain.ProductSpecPrice;
 import com.example.demo.mapper.*;
 import com.example.demo.service.ProductService;
 import com.example.demo.service.ProductSpecPriceService;
+import com.example.demo.service.IdGeneratorService;
 import com.example.demo.vo.AddProductVO;
 import com.example.demo.vo.GetProductVO;
 import com.example.demo.vo.ProductSpecVO;
@@ -38,6 +39,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     private final ProductMapper productMapper;
     private final ProductSpecPriceMapper productSpecPriceMapper;
     private final ProductSpecPriceService productSpecPriceService;
+    private final IdGeneratorService idGeneratorService;
 
 
     @Override
@@ -71,6 +73,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productSpecPrice.setSpecType("cup_type");
                     productSpecPrice.setCreateTime(LocalDateTime.now());
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    // 生成规格ID
+                    Long specId = idGeneratorService.generateSpecId(product.getId(), "cup_type");
+                    productSpecPrice.setId(specId);
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
                 log.info("保存杯型规格数量：{}", cupTypeList.size());
@@ -83,6 +88,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productSpecPrice.setSpecType("topping");
                     productSpecPrice.setCreateTime(LocalDateTime.now());
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    // 生成规格ID
+                    Long specId = idGeneratorService.generateSpecId(product.getId(), "topping");
+                    productSpecPrice.setId(specId);
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
                 log.info("保存小料规格数量：{}", toppingList.size());
@@ -95,6 +103,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productSpecPrice.setSpecType("taste");
                     productSpecPrice.setCreateTime(LocalDateTime.now());
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    // 生成规格ID
+                    Long specId = idGeneratorService.generateSpecId(product.getId(), "taste");
+                    productSpecPrice.setId(specId);
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
                 log.info("保存口味规格数量：{}", tasteList.size());
@@ -107,6 +118,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productSpecPrice.setSpecType("temperature");
                     productSpecPrice.setCreateTime(LocalDateTime.now());
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    // 生成规格ID
+                    Long specId = idGeneratorService.generateSpecId(product.getId(), "temperature");
+                    productSpecPrice.setId(specId);
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
                 log.info("保存温度规格数量：{}", temperatureList.size());
@@ -259,6 +273,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productSpecPrice.setSpecType("cup_type");
                     productSpecPrice.setCreateTime(LocalDateTime.now());
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    // 生成规格ID
+                    Long specId = idGeneratorService.generateSpecId(productId, "cup_type");
+                    productSpecPrice.setId(specId);
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
                 log.info("保存杯型规格数量：{}", cupTypeList.size());
@@ -272,6 +289,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productSpecPrice.setSpecType("taste");
                     productSpecPrice.setCreateTime(LocalDateTime.now());
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    // 生成规格ID
+                    Long specId = idGeneratorService.generateSpecId(productId, "taste");
+                    productSpecPrice.setId(specId);
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
                 log.info("保存口味规格数量：{}", tasteList.size());
@@ -285,6 +305,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productSpecPrice.setSpecType("temperature");
                     productSpecPrice.setCreateTime(LocalDateTime.now());
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    // 生成规格ID
+                    Long specId = idGeneratorService.generateSpecId(productId, "temperature");
+                    productSpecPrice.setId(specId);
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
                 log.info("保存温度规格数量：{}", temperatureList.size());
@@ -298,6 +321,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                     productSpecPrice.setSpecType("topping");
                     productSpecPrice.setCreateTime(LocalDateTime.now());
                     productSpecPrice.setUpdateTime(LocalDateTime.now());
+                    // 生成规格ID
+                    Long specId = idGeneratorService.generateSpecId(productId, "topping");
+                    productSpecPrice.setId(specId);
                     productSpecPriceMapper.insert(productSpecPrice);
                 }
                 log.info("保存小料规格数量：{}", toppingList.size());

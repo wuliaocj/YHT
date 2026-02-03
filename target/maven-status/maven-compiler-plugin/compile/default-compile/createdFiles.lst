@@ -5,6 +5,7 @@ com\example\demo\service\BannerService.class
 com\example\demo\controller\ProductReviewController.class
 com\example\demo\controller\PaymentController.class
 com\example\demo\service\impl\PermissionServiceImpl.class
+com\example\demo\util\HttpResult.class
 com\example\demo\domain\ProductCollection.class
 com\example\demo\service\StatisticsService.class
 com\example\demo\domain\Product.class
@@ -24,6 +25,8 @@ com\example\demo\service\impl\PaymentServiceImpl.class
 com\example\demo\service\OrderService.class
 com\example\demo\config\SecurityConfig.class
 com\example\demo\controller\PromotionController$UserPromotionController.class
+com\example\demo\service\IdGeneratorService.class
+com\example\demo\controller\TestController.class
 com\example\demo\controller\CouponController$AdminCouponController.class
 com\example\demo\controller\OrderController.class
 com\example\demo\http\HttpStatus.class

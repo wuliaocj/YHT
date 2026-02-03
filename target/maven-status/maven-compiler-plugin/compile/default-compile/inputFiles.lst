@@ -28,6 +28,7 @@ C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\domain\Order.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\impl\ProductServiceImpl.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\controller\PromotionController.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\mapper\UserCouponMapper.java
+C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\IdGeneratorService.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\ProductSpecPriceService.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\impl\PromotionServiceImpl.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\domain\Banner.java
@@ -49,6 +50,7 @@ C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\domain\Cart.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\config\WebConfig.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\domain\Address.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\PermissionService.java
+C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\controller\TestController.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\domain\PaymentRecord.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\mapper\ProductCollectionMapper.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\mapper\ProductReviewMapper.java
@@ -58,6 +60,7 @@ C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\OrderService.
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\BannerService.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\vo\PageResponseVO.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\impl\OrderServiceImpl.java
+C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\util\HttpResult.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\impl\LogServiceImpl.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\impl\ProductReviewServiceImpl.java
 C:\Users\OrBit-0174\YHT\YHT\src\main\java\com\example\demo\service\impl\ProductSpecPriceServiceImpl.java
