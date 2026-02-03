@@ -90,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
         Integer couponId = order.getCouponId();
         if (couponId != null) {
             // 这里可以添加优惠券使用逻辑
-            // couponService.useCoupon(userId, couponId, orderId);
+             couponService.useCoupon(userId, couponId, order.getId());
         }
         
         // 实际支付金额 = 商品总价 + 配送费 - 优惠金额（最小为0）

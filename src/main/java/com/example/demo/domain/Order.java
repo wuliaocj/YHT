@@ -27,6 +27,7 @@ public class Order {
     private Integer orderStatus;
     private Integer orderType;
     private Integer couponId;
+    private Integer addressId;
     private String takeCode;
     private LocalDateTime estimatedTime;
     private LocalDateTime completeTime;

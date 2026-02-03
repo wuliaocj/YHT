@@ -41,6 +41,11 @@ public class OrderController {
             log.warn("创建订单失败：支付方式无效，paymentMethod：{}", order.getPaymentMethod());
             return HttpResult.error("支付方式无效，仅支持1=微信、2=支付宝、3=现金");
         }
+        // 外卖订单必须填写地址
+        if (order.getOrderType() == 2 && (order.getAddressId() == null || order.getAddressId() <= 0)) {
+            log.warn("创建订单失败：外卖订单必须填写地址，userId：{}", userId);
+            return HttpResult.error("外卖订单必须填写地址");
+        }
 
         // 2. 补全默认值（外卖默认配送费，堂食配送费=0）
         if (order.getOrderType() == 1) { // 堂食

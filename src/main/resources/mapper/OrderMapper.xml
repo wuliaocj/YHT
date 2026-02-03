@@ -17,6 +17,7 @@
         <result column="transaction_id" property="transactionId"/>
         <result column="order_status" property="orderStatus"/>
         <result column="order_type" property="orderType"/>
+        <result column="address_id" property="addressId"/>
         <result column="take_code" property="takeCode"/>
         <result column="estimated_time" property="estimatedTime"/>
         <result column="complete_time" property="completeTime"/>
@@ -50,11 +51,11 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         insert into `order`(order_no, user_id, total_amount, discount_amount, delivery_fee, actual_amount,
                             payment_method, payment_status, payment_time, transaction_id,
-                            order_status, order_type, coupon_id, take_code, estimated_time,
+                            order_status, order_type, address_id, take_code, estimated_time,
                             complete_time, cancel_reason, cancel_time, user_remark, admin_remark)
         values (#{orderNo}, #{userId}, #{totalAmount}, #{discountAmount}, #{deliveryFee}, #{actualAmount},
                 #{paymentMethod}, #{paymentStatus}, #{paymentTime}, #{transactionId},
-                #{orderStatus}, #{orderType}, #{couponId}, #{takeCode}, #{estimatedTime},
+                #{orderStatus}, #{orderType}, #{addressId}, #{takeCode}, #{estimatedTime},
                 #{completeTime}, #{cancelReason}, #{cancelTime}, #{userRemark}, #{adminRemark})
     </insert>
 
@@ -70,7 +71,7 @@
             transaction_id  = #{transactionId},
             order_status    = #{orderStatus},
             order_type      = #{orderType},
-            coupon_id       = #{couponId},
+            address_id      = #{addressId},
             take_code       = #{takeCode},
             estimated_time  = #{estimatedTime},
             complete_time   = #{completeTime},

@@ -17,7 +17,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail/{id}")
     public HttpResult detail(@PathVariable(required = false) Long id) {
         if (id == null) {
             return HttpResult.error("商品ID不能为空");
