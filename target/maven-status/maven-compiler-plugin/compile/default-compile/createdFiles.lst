@@ -27,7 +27,6 @@ com\example\demo\config\SecurityConfig.class
 com\example\demo\controller\PromotionController$UserPromotionController.class
 com\example\demo\service\IdGeneratorService.class
 com\example\demo\controller\TestController.class
-com\example\demo\controller\CouponController$AdminCouponController.class
 com\example\demo\controller\OrderController.class
 com\example\demo\http\HttpStatus.class
 com\example\demo\domain\Admin.class
@@ -54,7 +53,6 @@ com\example\demo\controller\UserController.class
 com\example\demo\mapper\OrderMapper.class
 com\example\demo\exception\BusinessException.class
 com\example\demo\controller\ProductSpecPriceController.class
-com\example\demo\controller\CouponController$UserCouponController.class
 com\example\demo\domain\UserPoint.class
 com\example\demo\service\impl\UserPointServiceImpl.class
 com\example\demo\controller\UserController$LoginRequest.class
@@ -100,6 +98,7 @@ com\example\demo\domain\Address.class
 com\example\demo\mapper\OrderItemMapper.class
 com\example\demo\service\impl\PromotionServiceImpl.class
 com\example\demo\service\impl\UserServiceImpl.class
+com\example\demo\controller\UserController$TestLoginRequest.class
 com\example\demo\service\ProductService.class
 com\example\demo\service\impl\AddressServiceImpl.class
 com\example\demo\controller\CartController.class

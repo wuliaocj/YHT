@@ -1,0 +1,4 @@
+-- 添加地址表经纬度字段
+ALTER TABLE address
+ADD COLUMN longitude DOUBLE DEFAULT NULL COMMENT '经度',
+ADD COLUMN latitude DOUBLE DEFAULT NULL COMMENT '纬度';

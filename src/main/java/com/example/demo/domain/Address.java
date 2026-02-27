@@ -19,6 +19,8 @@ public class Address {
     private String district;
     private String detailAddress;
     private String postalCode;
+    private Double longitude;
+    private Double latitude;
     private Integer isDefault;
     private Integer status;
     private LocalDateTime createTime;

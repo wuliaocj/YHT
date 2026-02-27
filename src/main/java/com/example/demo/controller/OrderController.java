@@ -82,7 +82,7 @@ public class OrderController {
      * @param orderId 订单ID
      * @return 订单详情
      */
-    @GetMapping("/{orderId}")
+    @GetMapping("/detail/{orderId}")
     public HttpResult detail(@PathVariable Integer orderId) {
         Order order = orderService.getOrderDetail(orderId);
         if (order == null) {

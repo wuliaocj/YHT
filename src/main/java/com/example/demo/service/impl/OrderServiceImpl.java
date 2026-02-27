@@ -86,13 +86,6 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal discountAmount = order.getDiscountAmount() == null ? BigDecimal.ZERO : order.getDiscountAmount();
         BigDecimal deliveryFee = order.getDeliveryFee() == null ? BigDecimal.ZERO : order.getDeliveryFee();
         
-        // 3.3 应用优惠券（如果有）
-        Integer couponId = order.getCouponId();
-        if (couponId != null) {
-            // 这里可以添加优惠券使用逻辑
-             couponService.useCoupon(userId, couponId, order.getId());
-        }
-        
         // 实际支付金额 = 商品总价 + 配送费 - 优惠金额（最小为0）
         // 使用银行家舍入法（RoundingMode.HALF_EVEN）确保精度
         BigDecimal actualAmount = productTotal.add(deliveryFee).subtract(discountAmount);
@@ -117,6 +110,13 @@ public class OrderServiceImpl implements OrderService {
         newOrder.setUserRemark(order.getUserRemark()); // 用户备注
         newOrder.setCreateTime(LocalDateTime.now());
         newOrder.setUpdateTime(LocalDateTime.now());
+        
+        // 记录优惠券ID（稍后在订单状态更新时使用）
+        Integer couponId = order.getCouponId();
+        if (couponId != null) {
+            // 记录优惠券ID，在订单支付成功后使用
+            newOrder.setCouponId(couponId);
+        }
 
         // 步骤5：插入订单主表
         orderMapper.insert(newOrder);

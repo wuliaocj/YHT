@@ -16,66 +16,48 @@ public class CouponController {
     }
 
     // 管理员接口
-    @RequestMapping("/api/admin/coupon")
-    public static class AdminCouponController {
-        private final CouponService couponService;
+    @GetMapping("/api/admin/coupon/list")
+    public HttpResult adminList() {
+        List<Coupon> list = couponService.listAll();
+        return HttpResult.ok(list);
+    }
 
-        public AdminCouponController(CouponService couponService) {
-            this.couponService = couponService;
-        }
+    @PostMapping("/api/admin/coupon/save")
+    public HttpResult adminSave(@RequestBody Coupon coupon) {
+        Coupon saved = couponService.save(coupon);
+        return HttpResult.ok(saved);
+    }
 
-        @GetMapping("/list")
-        public HttpResult list() {
-            List<Coupon> list = couponService.listAll();
-            return HttpResult.ok(list);
-        }
-
-        @PostMapping("/save")
-        public HttpResult save(@RequestBody Coupon coupon) {
-            Coupon saved = couponService.save(coupon);
-            return HttpResult.ok(saved);
-        }
-
-        @PostMapping("/delete/{id}")
-        public HttpResult delete(@PathVariable Integer id) {
-            couponService.delete(id);
-            return HttpResult.ok("删除成功");
-        }
+    @PostMapping("/api/admin/coupon/delete/{id}")
+    public HttpResult adminDelete(@PathVariable Integer id) {
+        couponService.delete(id);
+        return HttpResult.ok("删除成功");
     }
 
     // 用户接口
-    @RequestMapping("/api/coupon")
-    public static class UserCouponController {
-        private final CouponService couponService;
+    @GetMapping("/api/coupon/available/{userId}")
+    public HttpResult listAvailableCoupons(@PathVariable Integer userId) {
+        List<Coupon> list = couponService.listAvailableCoupons(userId);
+        return HttpResult.ok(list);
+    }
 
-        public UserCouponController(CouponService couponService) {
-            this.couponService = couponService;
-        }
+    @GetMapping("/api/coupon/user/{userId}")
+    public HttpResult listUserCoupons(@PathVariable Integer userId) {
+        return HttpResult.ok(couponService.listUserCoupons(userId));
+    }
 
-        @GetMapping("/available/{userId}")
-        public HttpResult listAvailableCoupons(@PathVariable Integer userId) {
-            List<Coupon> list = couponService.listAvailableCoupons(userId);
-            return HttpResult.ok(list);
-        }
+    @GetMapping("/api/coupon/user/available/{userId}")
+    public HttpResult listUserAvailableCoupons(@PathVariable Integer userId) {
+        return HttpResult.ok(couponService.listUserAvailableCoupons(userId));
+    }
 
-        @GetMapping("/user/{userId}")
-        public HttpResult listUserCoupons(@PathVariable Integer userId) {
-            return HttpResult.ok(couponService.listUserCoupons(userId));
-        }
-
-        @GetMapping("/user/available/{userId}")
-        public HttpResult listUserAvailableCoupons(@PathVariable Integer userId) {
-            return HttpResult.ok(couponService.listUserAvailableCoupons(userId));
-        }
-
-        @PostMapping("/receive")
-        public HttpResult receiveCoupon(@RequestParam Integer userId, @RequestParam Integer couponId) {
-            try {
-                couponService.receiveCoupon(userId, couponId);
-                return HttpResult.ok("领取成功");
-            } catch (Exception e) {
-                return HttpResult.error(e.getMessage());
-            }
+    @PostMapping("/api/coupon/receive")
+    public HttpResult receiveCoupon(@RequestParam Integer userId, @RequestParam Integer couponId) {
+        try {
+            couponService.receiveCoupon(userId, couponId);
+            return HttpResult.ok("领取成功");
+        } catch (Exception e) {
+            return HttpResult.error(e.getMessage());
         }
     }
 }
