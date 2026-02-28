@@ -20,7 +20,7 @@ public interface OrderService {
 
     Order getOrderDetail(Integer orderId);
 
-    PageResponseVO<Order> listOrdersByPage(PageRequestVO pageRequest);
+    PageResponseVO<Order> listOrdersByPage(PageRequestVO pageRequest, String orderId, Integer status, String startTime, String endTime);
 
     List<Order> listAllOrders();
 

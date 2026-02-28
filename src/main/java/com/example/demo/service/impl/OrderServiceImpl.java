@@ -245,9 +245,26 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public PageResponseVO<Order> listOrdersByPage(PageRequestVO pageRequest) {
+    public PageResponseVO<Order> listOrdersByPage(PageRequestVO pageRequest, String orderId, Integer status, String startTime, String endTime) {
+        // 校验分页参数
+        pageRequest.validate();
+
         // 构建查询条件
         LambdaQueryWrapper<Order> queryWrapper = new LambdaQueryWrapper<>();
+        
+        // 添加过滤条件
+        if (orderId != null && !orderId.trim().isEmpty()) {
+            queryWrapper.like(Order::getOrderNo, orderId);
+        }
+        if (status != null) {
+            queryWrapper.eq(Order::getOrderStatus, status);
+        }
+        if (startTime != null && !startTime.trim().isEmpty()) {
+            queryWrapper.ge(Order::getCreateTime, startTime);
+        }
+        if (endTime != null && !endTime.trim().isEmpty()) {
+            queryWrapper.le(Order::getCreateTime, endTime);
+        }
         
         // 添加排序条件
         if (pageRequest.getOrderBy() != null && !pageRequest.getOrderBy().isEmpty()) {
@@ -270,23 +287,22 @@ public class OrderServiceImpl implements OrderService {
             queryWrapper.orderByDesc(Order::getCreateTime);
         }
         
-        // 执行分页查询
-        List<Order> records = orderMapper.selectList(queryWrapper);
-        Long total = orderMapper.selectCount(queryWrapper);
-        
-        // 手动分页（如果使用MyBatis-Plus的分页插件，可以直接使用）
-        int offset = pageRequest.getOffset();
-        int limit = pageRequest.getPageSize();
-        
-        List<Order> pagedRecords;
-        if (offset >= records.size()) {
-            pagedRecords = new java.util.ArrayList<>();
-        } else {
-            int endIndex = Math.min(offset + limit, records.size());
-            pagedRecords = records.subList(offset, endIndex);
+        // 计算总数
+        long total = orderMapper.selectCount(queryWrapper);
+        if (total == 0) {
+            return PageResponseVO.empty(pageRequest.getPageNum(), pageRequest.getPageSize());
         }
         
-        return PageResponseVO.of(pagedRecords, total, pageRequest.getPageNum(), pageRequest.getPageSize());
+        // 分页查询
+        int offset = pageRequest.getOffset();
+        int limit = pageRequest.getPageSize();
+        List<Order> records = orderMapper.selectByPage(offset, limit, queryWrapper);
+        
+        if (records == null || records.isEmpty()) {
+            return PageResponseVO.empty(pageRequest.getPageNum(), pageRequest.getPageSize());
+        }
+        
+        return PageResponseVO.of(records, total, pageRequest.getPageNum(), pageRequest.getPageSize());
     }
 
     // 生成订单号（使用雪花算法）

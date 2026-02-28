@@ -85,6 +85,16 @@
     <select id="selectByTakeCode" resultMap="OrderResultMap">
         select * from `order` where take_code = #{takeCode}
     </select>
+
+    <select id="selectByPage" resultMap="OrderResultMap">
+        select * from `order`
+        <where>
+            <if test="wrapper != null">
+                ${wrapper.sqlSegment}
+            </if>
+        </where>
+        limit #{offset}, #{limit}
+    </select>
 </mapper>
 
 

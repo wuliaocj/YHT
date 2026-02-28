@@ -1,8 +1,11 @@
 package com.example.demo.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.demo.domain.Admin;
 import com.example.demo.mapper.AdminMapper;
 import com.example.demo.service.AdminService;
+import com.example.demo.vo.PageRequestVO;
+import com.example.demo.vo.PageResponseVO;
 
 import org.springframework.stereotype.Service;
 
@@ -87,5 +90,60 @@ public class AdminServiceImpl implements AdminService {
         admin.setStatus(status);
         admin.setUpdateTime(LocalDateTime.now());
         adminMapper.update(admin);
+    }
+
+    @Override
+    public PageResponseVO<Admin> getAdminListByPage(PageRequestVO pageRequest, String keyword) {
+        // 校验分页参数
+        pageRequest.validate();
+
+        // 构建查询条件
+        LambdaQueryWrapper<Admin> queryWrapper = new LambdaQueryWrapper<>();
+        
+        // 添加过滤条件
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            queryWrapper.and(wrapper -> {
+                wrapper.like(Admin::getUsername, keyword)
+                       .or()
+                       .like(Admin::getRealName, keyword)
+                       .or()
+                       .like(Admin::getPhone, keyword);
+            });
+        }
+        
+        // 添加排序条件
+        if (pageRequest.getOrderBy() != null && !pageRequest.getOrderBy().isEmpty()) {
+            switch (pageRequest.getOrderBy()) {
+                case "createTime":
+                    queryWrapper.orderBy(true, "desc".equals(pageRequest.getOrderDirection()), Admin::getCreateTime);
+                    break;
+                case "username":
+                    queryWrapper.orderBy(true, "desc".equals(pageRequest.getOrderDirection()), Admin::getUsername);
+                    break;
+                default:
+                    queryWrapper.orderByDesc(Admin::getCreateTime);
+                    break;
+            }
+        } else {
+            // 默认按创建时间倒序
+            queryWrapper.orderByDesc(Admin::getCreateTime);
+        }
+        
+        // 计算总数
+        long total = adminMapper.selectCount(queryWrapper);
+        if (total == 0) {
+            return PageResponseVO.empty(pageRequest.getPageNum(), pageRequest.getPageSize());
+        }
+        
+        // 分页查询
+        int offset = pageRequest.getOffset();
+        int limit = pageRequest.getPageSize();
+        List<Admin> records = adminMapper.selectByPage(offset, limit, queryWrapper);
+        
+        if (records == null || records.isEmpty()) {
+            return PageResponseVO.empty(pageRequest.getPageNum(), pageRequest.getPageSize());
+        }
+        
+        return PageResponseVO.of(records, total, pageRequest.getPageNum(), pageRequest.getPageSize());
     }
 }

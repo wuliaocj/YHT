@@ -19,4 +19,20 @@ public interface RoleMapper extends BaseMapper<Role> {
     int update(Role role);
 
     int deleteById(@Param("id") Integer id);
+
+    /**
+     * 分页查询角色
+     * @param offset 偏移量
+     * @param limit 限制数量
+     * @param wrapper 查询条件
+     * @return 角色列表
+     */
+    List<Role> selectByPage(@Param("offset") int offset, @Param("limit") int limit, @Param("wrapper") Object wrapper);
+
+    /**
+     * 查询角色总数
+     * @param wrapper 查询条件
+     * @return 角色总数
+     */
+    long selectCount(@Param("wrapper") Object wrapper);
 }

@@ -106,6 +106,17 @@
     <delete id="delete">
         delete from product where id = #{id}
     </delete>
+
+    <select id="selectByPage" resultMap="ProductResultMap">
+        select * from product
+        <where>
+            <if test="wrapper != null">
+                ${wrapper.sqlSegment}
+            </if>
+        </where>
+        order by sort_order asc, id asc
+        limit #{offset}, #{limit}
+    </select>
 </mapper>
 
 

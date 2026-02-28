@@ -94,16 +94,34 @@ public class OrderController {
 
     /**
      * 管理员获取订单列表（分页）
-     * @param pageRequest 分页请求参数
+     * @param page 页码
+     * @param pageSize 每页大小
+     * @param orderId 订单号
+     * @param status 订单状态
+     * @param startTime 开始时间
+     * @param endTime 结束时间
      * @return 分页订单列表
      */
     @GetMapping("/admin/order/list")
-    public HttpResult adminListOrders(PageRequestVO pageRequest) {
-        pageRequest.validate();
-        PageResponseVO<Order> pageResponse = orderService.listOrdersByPage(pageRequest);
-        log.debug("管理员查询订单列表，页码：{}，每页大小：{}，总记录数：{}",
-                pageRequest.getPageNum(), pageRequest.getPageSize(), pageResponse.getTotal());
-        return HttpResult.ok(pageResponse);
+    public HttpResult adminListOrders(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String orderId,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime) {
+        try {
+            PageRequestVO pageRequest = new PageRequestVO();
+            pageRequest.setPageNum(page);
+            pageRequest.setPageSize(pageSize);
+            PageResponseVO<Order> pageResponse = orderService.listOrdersByPage(pageRequest, orderId, status, startTime, endTime);
+            log.debug("管理员查询订单列表，页码：{}，每页大小：{}，总记录数：{}",
+                    pageRequest.getPageNum(), pageRequest.getPageSize(), pageResponse.getTotal());
+            return HttpResult.ok(pageResponse);
+        } catch (Exception e) {
+            log.error("查询订单列表失败：", e);
+            return HttpResult.error("查询订单列表失败：" + e.getMessage());
+        }
     }
 
     /**

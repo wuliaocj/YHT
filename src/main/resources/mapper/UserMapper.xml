@@ -63,6 +63,25 @@
     <select id="selectAll" resultMap="UserResultMap">
         select * from `user` order by create_time desc
     </select>
+
+    <select id="selectByPage" resultMap="UserResultMap">
+        select * from `user`
+        <where>
+            <if test="wrapper != null">
+                ${wrapper.sqlSegment}
+            </if>
+        </where>
+        limit #{offset}, #{limit}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Long">
+        select count(*) from `user`
+        <where>
+            <if test="wrapper != null">
+                ${wrapper.sqlSegment}
+            </if>
+        </where>
+    </select>
 </mapper>
 
 

@@ -11,6 +11,8 @@ import com.example.demo.service.ProductSpecPriceService;
 import com.example.demo.service.IdGeneratorService;
 import com.example.demo.vo.AddProductVO;
 import com.example.demo.vo.GetProductVO;
+import com.example.demo.vo.PageRequestVO;
+import com.example.demo.vo.PageResponseVO;
 import com.example.demo.vo.ProductSpecVO;
 import com.example.demo.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -456,6 +458,68 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         return products.stream()
                 .map(product -> buildProductVO(product, specsByProduct.getOrDefault(product.getId(), Map.of())))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 分页获取商品列表
+     */
+    @Override
+    public PageResponseVO<GetProductVO> getProductListByPage(PageRequestVO pageRequest, String keyword, Integer categoryId, Integer status) {
+        // 校验分页参数
+        pageRequest.validate();
+
+        // 构建查询条件
+        LambdaQueryWrapper<Product> queryWrapper = new LambdaQueryWrapper<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            queryWrapper.like(Product::getName, keyword);
+        }
+        if (categoryId != null) {
+            queryWrapper.eq(Product::getCategoryId, categoryId);
+        }
+        if (status != null) {
+            queryWrapper.eq(Product::getStatus, status);
+        }
+
+        // 计算总数
+        long total = this.count(queryWrapper);
+        if (total == 0) {
+            return PageResponseVO.empty(pageRequest.getPageNum(), pageRequest.getPageSize());
+        }
+
+        // 分页查询
+        int offset = pageRequest.getOffset();
+        int limit = pageRequest.getPageSize();
+        List<Product> products = productMapper.selectByPage(offset, limit, queryWrapper);
+
+        if (CollectionUtils.isEmpty(products)) {
+            return PageResponseVO.empty(pageRequest.getPageNum(), pageRequest.getPageSize());
+        }
+
+        // 批量获取所有商品ID
+        List<Long> productIds = products.stream()
+                .map(Product::getId)
+                .collect(Collectors.toList());
+
+        // 批量查询所有规格（一次性查询，避免N+1）
+        LambdaQueryWrapper<ProductSpecPrice> specWrapper = new LambdaQueryWrapper<>();
+        specWrapper.in(ProductSpecPrice::getProductId, productIds)
+                .eq(ProductSpecPrice::getStatus, 1);
+        List<ProductSpecPrice> allSpecs = productSpecPriceService.list(specWrapper);
+
+        // 按商品ID和规格类型分组
+        Map<Long, Map<String, List<ProductSpecPrice>>> specsByProduct = allSpecs.stream()
+                .collect(groupingBy(
+                        ProductSpecPrice::getProductId,
+                        groupingBy(ProductSpecPrice::getSpecType)
+                ));
+
+        // 转换为VO列表
+        List<GetProductVO> productVOs = products.stream()
+                .map(product -> buildProductVO(product, specsByProduct.getOrDefault(product.getId(), Map.of())))
+                .collect(Collectors.toList());
+
+        // 构建分页响应
+        return PageResponseVO.of(productVOs, total, pageRequest.getPageNum(), pageRequest.getPageSize());
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.User;
+import com.example.demo.vo.PageRequestVO;
+import com.example.demo.vo.PageResponseVO;
 
 import java.util.List;
 
@@ -26,6 +28,15 @@ public interface UserService {
     User getById(Integer id);
 
     User updateUser(User user);
+
+    /**
+     * 分页获取用户列表
+     * @param pageRequest 分页请求参数
+     * @param keyword 搜索关键词（用户名或手机号）
+     * @param status 用户状态
+     * @return 分页响应
+     */
+    PageResponseVO<User> getUserListByPage(PageRequestVO pageRequest, String keyword, Integer status);
 }
 
 

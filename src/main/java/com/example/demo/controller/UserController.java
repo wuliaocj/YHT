@@ -7,6 +7,8 @@ import com.example.demo.service.UserService;
 import com.example.demo.util.JwtUtil;
 import com.example.demo.util.WxLoginUtil;
 import com.example.demo.vo.LoginResponseVO;
+import com.example.demo.vo.PageRequestVO;
+import com.example.demo.vo.PageResponseVO;
 import com.example.demo.vo.WxCode2SessionVO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -193,5 +195,33 @@ public class UserController {
         }
         userService.updateUserStatus(userId, status);
         return HttpResult.ok("更新成功");
+    }
+
+    /**
+     * 管理员获取用户列表（分页）
+     * @param page 页码
+     * @param pageSize 每页大小
+     * @param keyword 搜索关键词（用户名或手机号）
+     * @param status 用户状态
+     * @return 分页用户列表
+     */
+    @GetMapping("/admin/user/list")
+    public HttpResult adminListUsers(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer status) {
+        try {
+            PageRequestVO pageRequest = new PageRequestVO();
+            pageRequest.setPageNum(page);
+            pageRequest.setPageSize(pageSize);
+            PageResponseVO<User> pageResponse = userService.getUserListByPage(pageRequest, keyword, status);
+            log.debug("管理员查询用户列表，页码：{}，每页大小：{}，总记录数：{}",
+                    pageRequest.getPageNum(), pageRequest.getPageSize(), pageResponse.getTotal());
+            return HttpResult.ok(pageResponse);
+        } catch (Exception e) {
+            log.error("查询用户列表失败：", e);
+            return HttpResult.error("查询用户列表失败：" + e.getMessage());
+        }
     }
 }

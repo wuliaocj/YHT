@@ -45,4 +45,23 @@
             update_time     = now()
         where id = #{id}
     </update>
+
+    <select id="selectByPage" resultMap="AdminResultMap">
+        select * from admin
+        <where>
+            <if test="wrapper != null">
+                ${wrapper.sqlSegment}
+            </if>
+        </where>
+        limit #{offset}, #{limit}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Long">
+        select count(*) from admin
+        <where>
+            <if test="wrapper != null">
+                ${wrapper.sqlSegment}
+            </if>
+        </where>
+    </select>
 </mapper>

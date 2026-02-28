@@ -168,14 +168,29 @@ public class AdminController {
     // ========== 角色管理 ==========
 
     /**
-     * 获取角色列表
-     * @return 角色列表
+     * 获取角色列表（分页）
+     * @param page 页码
+     * @param pageSize 每页大小
+     * @param keyword 搜索关键词
+     * @return 分页角色列表
      */
     @GetMapping("/role/list")
-    public HttpResult listRoles() {
-        var roles = roleService.listAllRoles();
-        log.debug("查询角色列表，数量：{}", roles.size());
-        return HttpResult.ok(roles);
+    public HttpResult listRoles(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String keyword) {
+        try {
+            PageRequestVO pageRequest = new PageRequestVO();
+            pageRequest.setPageNum(page);
+            pageRequest.setPageSize(pageSize);
+            var roles = roleService.getRoleListByPage(pageRequest, keyword);
+            log.debug("查询角色列表，页码：{}，每页大小：{}，总记录数：{}",
+                    pageRequest.getPageNum(), pageRequest.getPageSize(), roles.getTotal());
+            return HttpResult.ok(roles);
+        } catch (Exception e) {
+            log.error("查询角色列表失败：{}", e.getMessage());
+            return HttpResult.error("查询角色列表失败：" + e.getMessage());
+        }
     }
 
     /**
@@ -250,14 +265,29 @@ public class AdminController {
     // ========== 权限管理 ==========
 
     /**
-     * 获取权限列表
-     * @return 权限列表
+     * 获取权限列表（分页）
+     * @param page 页码
+     * @param pageSize 每页大小
+     * @param keyword 搜索关键词
+     * @return 分页权限列表
      */
     @GetMapping("/permission/list")
-    public HttpResult listPermissions() {
-        var permissions = permissionService.listAllPermissions();
-        log.debug("查询权限列表，数量：{}", permissions.size());
-        return HttpResult.ok(permissions);
+    public HttpResult listPermissions(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String keyword) {
+        try {
+            PageRequestVO pageRequest = new PageRequestVO();
+            pageRequest.setPageNum(page);
+            pageRequest.setPageSize(pageSize);
+            var permissions = permissionService.getPermissionListByPage(pageRequest, keyword);
+            log.debug("查询权限列表，页码：{}，每页大小：{}，总记录数：{}",
+                    pageRequest.getPageNum(), pageRequest.getPageSize(), permissions.getTotal());
+            return HttpResult.ok(permissions);
+        } catch (Exception e) {
+            log.error("查询权限列表失败：{}", e.getMessage());
+            return HttpResult.error("查询权限列表失败：" + e.getMessage());
+        }
     }
 
     /**
@@ -509,14 +539,29 @@ public class AdminController {
     }
 
     /**
-     * 获取管理员列表
-     * @return 管理员列表
+     * 获取管理员列表（分页）
+     * @param page 页码
+     * @param pageSize 每页大小
+     * @param keyword 搜索关键词
+     * @return 分页管理员列表
      */
     @GetMapping("/list")
-    public HttpResult listAdmins() {
-        var admins = adminService.listAllAdmins();
-        log.debug("查询管理员列表，数量：{}", admins.size());
-        return HttpResult.ok(admins);
+    public HttpResult listAdmins(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String keyword) {
+        try {
+            PageRequestVO pageRequest = new PageRequestVO();
+            pageRequest.setPageNum(page);
+            pageRequest.setPageSize(pageSize);
+            var admins = adminService.getAdminListByPage(pageRequest, keyword);
+            log.debug("查询管理员列表，页码：{}，每页大小：{}，总记录数：{}",
+                    pageRequest.getPageNum(), pageRequest.getPageSize(), admins.getTotal());
+            return HttpResult.ok(admins);
+        } catch (Exception e) {
+            log.error("查询管理员列表失败：{}", e.getMessage());
+            return HttpResult.error("查询管理员列表失败：" + e.getMessage());
+        }
     }
 
     /**

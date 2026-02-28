@@ -32,6 +32,15 @@ public interface ProductMapper extends BaseMapper<Product> {
      * @return 搜索结果列表
      */
     List<Product> searchProducts(@Param("keyword") String keyword);
+
+    /**
+     * 分页查询商品
+     * @param offset 偏移量
+     * @param limit 限制数量
+     * @param wrapper 查询条件
+     * @return 商品列表
+     */
+    List<Product> selectByPage(@Param("offset") int offset, @Param("limit") int limit, @Param("wrapper") Object wrapper);
 }
 
 

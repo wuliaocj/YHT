@@ -4,6 +4,8 @@ import com.example.demo.http.HttpResult;
 import com.example.demo.service.ProductService;
 import com.example.demo.vo.AddProductVO;
 import com.example.demo.vo.GetProductVO;
+import com.example.demo.vo.PageRequestVO;
+import com.example.demo.vo.PageResponseVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,8 +46,22 @@ public class ProductController {
     }
 
     @GetMapping("/admin/list")
-    public HttpResult listProduct() {
-        return HttpResult.ok( "商品查询成功",productService.getProductList());
+    public HttpResult listProduct(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) Integer status) {
+        try {
+            PageRequestVO pageRequest = new PageRequestVO();
+            pageRequest.setPageNum(page);
+            pageRequest.setPageSize(pageSize);
+            PageResponseVO<GetProductVO> result = productService.getProductListByPage(pageRequest, keyword, categoryId, status);
+            return HttpResult.ok("商品查询成功", result);
+        } catch (Exception e) {
+            log.error("查询商品列表失败：", e);
+            return HttpResult.error("查询商品列表失败：" + e.getMessage());
+        }
     }
 
     @PostMapping("/admin/update")

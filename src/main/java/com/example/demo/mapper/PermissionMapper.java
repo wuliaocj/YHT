@@ -21,4 +21,20 @@ public interface PermissionMapper extends BaseMapper<Permission> {
     int update(Permission permission);
 
     int deleteById(@Param("id") Integer id);
+
+    /**
+     * 分页查询权限
+     * @param offset 偏移量
+     * @param limit 限制数量
+     * @param wrapper 查询条件
+     * @return 权限列表
+     */
+    List<Permission> selectByPage(@Param("offset") int offset, @Param("limit") int limit, @Param("wrapper") Object wrapper);
+
+    /**
+     * 查询权限总数
+     * @param wrapper 查询条件
+     * @return 权限总数
+     */
+    long selectCount(@Param("wrapper") Object wrapper);
 }
