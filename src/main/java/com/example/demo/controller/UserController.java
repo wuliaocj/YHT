@@ -44,6 +44,32 @@ public class UserController {
             this.code = code;
         }
     }
+
+    /**
+     * 测试账号登录请求参数
+     */
+    public static class TestLoginRequest {
+        @NotBlank(message = "username不能为空")
+        private String username;
+        @NotBlank(message = "password不能为空")
+        private String password;
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+    }
     /**
      * 微信小程序登录接口
      * @param request 请求参数（code）
@@ -77,6 +103,48 @@ public class UserController {
         LoginResponseVO responseVO = new LoginResponseVO();
         responseVO.setToken(token);
         responseVO.setOpenid(openid);
+
+        LoginResponseVO.UserInfoVO userInfoVO = new LoginResponseVO.UserInfoVO();
+        userInfoVO.setNickname(user.getNickname());
+        userInfoVO.setAvatar(user.getAvatarUrl());
+        responseVO.setUserInfo(userInfoVO);
+        return Result.success(responseVO);
+    }
+
+    /**
+     * 测试账号登录接口
+     * @param request 请求参数（username, password）
+     * @return 登录结果（token+用户信息）
+     */
+    @PostMapping("/test/login")
+    public Result<LoginResponseVO> testLogin(@Valid @RequestBody TestLoginRequest request) {
+        // 1. 验证测试账号
+        if (!"test".equals(request.getUsername()) || !"123456".equals(request.getPassword())) {
+            log.warn("测试账号登录失败，username：{}", request.getUsername());
+            return Result.fail("用户名或密码错误");
+        }
+        
+        // 2. 使用固定的测试openid
+        String testOpenid = "test_openid_123456";
+        
+        // 3. 查询/创建测试用户
+        User user = userService.getUserByOpenid(testOpenid);
+        if (user == null) {
+            user = userService.createUser(testOpenid);
+            // 设置测试用户信息
+            user.setNickname("测试用户");
+            user.setAvatarUrl("https://via.placeholder.com/100");
+            userService.updateUser(user);
+        }
+        
+        // 4. 生成JWT token
+        String token = jwtUtil.generateToken(testOpenid);
+        log.info("测试账号登录成功，userId：{}，username：{}", user.getId(), request.getUsername());
+        
+        // 5. 构建响应结果
+        LoginResponseVO responseVO = new LoginResponseVO();
+        responseVO.setToken(token);
+        responseVO.setOpenid(testOpenid);
 
         LoginResponseVO.UserInfoVO userInfoVO = new LoginResponseVO.UserInfoVO();
         userInfoVO.setNickname(user.getNickname());

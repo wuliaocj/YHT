@@ -19,7 +19,6 @@ com\example\demo\domain\Promotion.class
 com\example\demo\mapper\AdminMapper.class
 com\example\demo\service\impl\OrderServiceImpl.class
 com\example\demo\service\impl\CartServiceImpl.class
-com\example\demo\controller\CouponController.class
 com\example\demo\domain\Cart.class
 com\example\demo\service\impl\PaymentServiceImpl.class
 com\example\demo\service\OrderService.class
@@ -27,7 +26,6 @@ com\example\demo\config\SecurityConfig.class
 com\example\demo\controller\PromotionController$UserPromotionController.class
 com\example\demo\service\IdGeneratorService.class
 com\example\demo\controller\TestController.class
-com\example\demo\controller\CouponController$AdminCouponController.class
 com\example\demo\controller\OrderController.class
 com\example\demo\http\HttpStatus.class
 com\example\demo\domain\Admin.class
@@ -41,6 +39,7 @@ com\example\demo\vo\OrderVO.class
 com\example\demo\util\WxLoginUtil.class
 com\example\demo\mapper\UserCouponMapper.class
 com\example\demo\vo\PageRequestVO.class
+com\example\demo\controller\UserCouponController.class
 com\example\demo\service\CategoryService.class
 com\example\demo\controller\UserPointController.class
 com\example\demo\mapper\BannerMapper.class
@@ -54,7 +53,6 @@ com\example\demo\controller\UserController.class
 com\example\demo\mapper\OrderMapper.class
 com\example\demo\exception\BusinessException.class
 com\example\demo\controller\ProductSpecPriceController.class
-com\example\demo\controller\CouponController$UserCouponController.class
 com\example\demo\domain\UserPoint.class
 com\example\demo\service\impl\UserPointServiceImpl.class
 com\example\demo\controller\UserController$LoginRequest.class
@@ -114,6 +112,7 @@ com\example\demo\domain\OperationLog.class
 com\example\demo\domain\Permission.class
 com\example\demo\DemoApplication.class
 com\example\demo\service\impl\CouponServiceImpl.class
+com\example\demo\controller\AdminCouponController.class
 com\example\demo\service\CouponService.class
 com\example\demo\vo\PageResponseVO.class
 com\example\demo\domain\UserCoupon.class

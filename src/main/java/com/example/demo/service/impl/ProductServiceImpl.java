@@ -345,6 +345,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         GetProductVO vo = new GetProductVO();
         vo.setProductId(product.getId());
         vo.setName(product.getName());
+        vo.setCategoryId(product.getCategoryId());
         vo.setDescription(product.getDescription());
         vo.setDetail(product.getDetail());
         vo.setMainImage(product.getMainImage());

@@ -14,6 +14,8 @@ public class GetProductVO {
     private Long productId;
     /** 商品名 */
     private String name;
+    /** 分类ID */
+    private Integer categoryId;
     /** 杯型规格列表（type=cup_type，状态=1） */
     private List<ProductSpecVO> cupTypeList;
     /** 小料规格列表（type=topping，状态=1） */

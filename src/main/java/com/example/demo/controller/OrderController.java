@@ -82,7 +82,7 @@ public class OrderController {
      * @param orderId 订单ID
      * @return 订单详情
      */
-    @GetMapping("/{orderId}")
+    @GetMapping("/detail/{orderId}")
     public HttpResult detail(@PathVariable Integer orderId) {
         Order order = orderService.getOrderDetail(orderId);
         if (order == null) {
@@ -173,6 +173,30 @@ public class OrderController {
         } catch (Exception e) {
             log.error("取餐码验证失败：", e);
             return HttpResult.error("取餐码验证失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 开始制作订单
+     * @param orderId 订单ID
+     * @return 更新结果
+     */
+    @PostMapping("/admin/order/start-preparing/{orderId}")
+    public HttpResult startPreparingOrder(@PathVariable Integer orderId) {
+        try {
+            // 基础参数校验
+            if (orderId == null || orderId <= 0) {
+                log.warn("开始制作订单失败：订单ID无效，orderId：{}", orderId);
+                return HttpResult.error("订单ID无效，请传入正整数");
+            }
+
+            // 调用Service更新订单状态为制作中
+            orderService.updateOrderStatus(orderId, 3, "开始制作");
+            log.info("开始制作订单成功，orderId：{}", orderId);
+            return HttpResult.ok("开始制作订单成功");
+        } catch (Exception e) {
+            log.error("开始制作订单失败：", e);
+            return HttpResult.error("开始制作订单失败：" + e.getMessage());
         }
     }
 

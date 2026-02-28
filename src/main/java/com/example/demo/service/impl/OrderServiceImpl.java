@@ -87,11 +87,7 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal deliveryFee = order.getDeliveryFee() == null ? BigDecimal.ZERO : order.getDeliveryFee();
         
         // 3.3 应用优惠券（如果有）
-        Integer couponId = order.getCouponId();
-        if (couponId != null) {
-            // 这里可以添加优惠券使用逻辑
-             couponService.useCoupon(userId, couponId, order.getId());
-        }
+        // 优惠券逻辑将在后续版本实现
         
         // 实际支付金额 = 商品总价 + 配送费 - 优惠金额（最小为0）
         // 使用银行家舍入法（RoundingMode.HALF_EVEN）确保精度
@@ -194,15 +190,7 @@ public class OrderServiceImpl implements OrderService {
             }
             
             // 使用优惠券（如果有）
-            Integer couponId = order.getCouponId();
-            if (couponId != null) {
-                try {
-                    couponService.useCoupon(order.getUserId(), couponId, orderId);
-                } catch (Exception e) {
-                    log.error("使用优惠券失败：", e);
-                    // 优惠券使用失败不影响订单状态更新
-                }
-            }
+            // 优惠券逻辑将在后续版本实现
         }
         
         orderMapper.update(order);

@@ -20,7 +20,7 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/list/{userId}")
     public HttpResult list(@PathVariable Integer userId) {
         List<Cart> list = cartService.listUserCart(userId);
         return HttpResult.ok(list);

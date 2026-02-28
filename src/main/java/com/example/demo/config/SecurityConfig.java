@@ -44,7 +44,7 @@ public class SecurityConfig {
                 // 配置权限
                 .authorizeHttpRequests(auth -> auth
                         // 公开接口
-                        .antMatchers("/api/user/login", "/api/admin/login").permitAll()
+                        .antMatchers("/api/user/login", "/api/user/test/login", "/api/admin/login").permitAll()
                         .antMatchers("/api/payment/callback").permitAll()
                         .antMatchers("/api/product/list", "/api/product/detail").permitAll()
                         .antMatchers("/api/banner/list").permitAll()
@@ -55,6 +55,7 @@ public class SecurityConfig {
 
                         // 管理员接口（需要ADMIN角色）
                         .antMatchers("/api/admin/**").hasRole("ADMIN")
+                        .antMatchers("/api/order/admin/**").hasRole("ADMIN")
 
                         // 用户接口（需要USER角色）
                         .antMatchers("/api/user/**").hasRole("USER")

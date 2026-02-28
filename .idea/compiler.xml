@@ -6,8 +6,9 @@
       <profile name="Annotation profile for demo" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <processorPath>
-          <entry name="$PROJECT_DIR$/../../../../../Maven/mvn_resp/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
         <module name="demo" />
       </profile>
